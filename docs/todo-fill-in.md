@@ -11,5 +11,4 @@ Search the docs for `TODO(owner)`. Checklist:
 - [ ] Z906 sub-level and master-volume reference positions (photo in `docs/img/`)
 - [ ] Exact room dimensions (notes from 2026-10-19 said about 10 x 11 ft; later 10 x 10 ft) and a floor plan with seat and speaker positions
 - [ ] Paths of the Omniphony and mpv configuration for the backup list in [runbook.md](runbook.md#backups)
-- [ ] Choose a licence and add a `LICENSE` file
 - [ ] Decide what to keep out of a public repository (library mount details, personal details)

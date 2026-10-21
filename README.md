@@ -115,5 +115,4 @@ How the Omniphony stack was built and debugged on this machine is in [docs/omnip
 
 The tuning decisions, measurements, listening tests and the build itself are the owner's. The scripts, analysis code
 and first drafts of these documents were written with Claude (Anthropic) during a working session on
-2026-10-20/21. **No licence has been chosen yet**; until one is added, all rights are reserved. Add a `LICENSE` file
-before making the repository public if you want others to reuse it.
+2026-10-20/21. Licensed under the [Apache License 2.0](LICENSE). The projects credited above have their own licences.
