@@ -49,3 +49,6 @@ alignment" mode would need CamillaDSP to reload its config live while keeping it
 
 ## D12. Z906 knobs are fixed references
 The tuning assumes the Z906 sub level as it is. Change the master volume freely; change the sub level only with a re-measurement.
+
+## D13. No night preset
+This rig is for full, object-rendered film sound. For late-night or neighbour-sensitive viewing the owner switches to the family TV and soundbar instead of adding a quiet-hours preset (reduced bass, compressed dynamics) here. *Revisit* only if that changes.
