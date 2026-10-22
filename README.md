@@ -38,7 +38,7 @@ The path of a film, from file to ears:
 | Computer | Kubuntu 24.04 laptop, 11th-gen Intel i5, Iris Xe graphics (a desktop is planned) |
 | Audio interface | Vantec 7.1 USB (C-Media class), analog 7.1 mode, 8 outputs |
 | Bed speakers | Logitech Z906: front L/R, centre, two surrounds, sub |
-| Height speakers | Two Samsung SWS-8500S speakers (the wireless surrounds of a Samsung HW-T670 soundbar system, now wired), on the ceiling, Salcon Class-D 2 x 50 W amplifier, no sub |
+| Height speakers | Two Samsung SWA-8500S speakers (the wireless surrounds of a Samsung HW-T670 soundbar system, now wired), on the ceiling, Salcon Class-D 2 x 50 W amplifier, no sub |
 | Projector and screen | BenQ W1070; 107 inch 16:9 screen from sanded, sprayed gypsum board with a matte black border |
 | Measurement | Dayton iMM-6S microphone on a separate USB adapter, Room EQ Wizard |
 | On hold | Custom subwoofer (JBL A1500HI, 75 L vented): not in the signal chain |

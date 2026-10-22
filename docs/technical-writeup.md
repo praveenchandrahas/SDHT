@@ -21,7 +21,7 @@ Blue outline is software, grey fill is hardware. The orange path is the fallback
 | Computer | Kubuntu laptop, 11th-gen Intel i5, Iris Xe graphics. A desktop (Ryzen 7 5700X, B550M, used RTX 3060 12 GB) is planned | Conversations, Jul and Aug 2026 |
 | Audio interface | Vantec 7.1 USB (C-Media CM6206 class), 8 analog outputs. Analog 7.1 mode; the optical output can leak in some modes | Conversation, Aug 2026 |
 | Bed speakers | Logitech Z906: front L/R, centre, two surrounds, sub. Fed through its multichannel analog input | Repository |
-| Height speakers | Two Samsung SWS-8500S speakers (the wireless surrounds of a Samsung HW-T670 soundbar system, now wired), on the ceiling, driven by a Salcon Class-D 2 x 50 W amplifier, no sub | Owner, 22 Oct 2026 |
+| Height speakers | Two Samsung SWA-8500S speakers (the wireless surrounds of a Samsung HW-T670 soundbar system, now wired), on the ceiling, driven by a Salcon Class-D 2 x 50 W amplifier, no sub | Owner, 22 Oct 2026 |
 | Custom subwoofer | JBL A1500HI in a 75 L vented box tuned to about 24-25 Hz, Salcon Class-D 500 W amplifier. **On hold**, not in the signal chain | Conversation, Jul 2026 |
 | Projector | BenQ W1070, 1080p DLP, about 2,700 lamp hours in Aug 2026 against a rating near 3,500. Relamp planned for 2027 | Conversations, Aug 2026 |
 | Screen | 107 inch 16:9, gypsum board, sanded and sprayed with Asian Paints Royale Glitz Ultra Matt base white, 4 inch matt black border. Measured about 2.38 x 1.34 m | Conversations, Jul and Aug 2026 |
