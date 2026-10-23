@@ -66,3 +66,27 @@ Centre polarity checked and found fine; the owner chose not to invert anything.
 - **Correlation-based polarity is unreliable** under about 1 ms misalignment: use the pair test.
 - **A recording labelled with the wrong preset** produced a misleading comparison: name recordings by the preset actually loaded.
 - **Timing tolerances:** the analyser's block-detection tolerance had to be widened to 15 ms to cope with +-5 ms channel delays.
+
+## 2026-10-23: heights, sub, and the standing profile
+
+- **Heights bass management and tone-match** (details in [alignment.md](alignment.md#heights-2026-10-23-bass-management-and-tone)).
+  The first guess (HP 120 Hz, a -21 dB sub feed from a level-matching rule) was wrong: it matched levels where the heights
+  are weak. The right feed is 0 dB, because every bed channel already feeds the sub at the LFE level. Delay and polarity of
+  the height-bass path hardly matter (20 settings within 0.05 dB) because heights and sub barely overlap.
+- **Trim.** Fit said +3.4 dB, verification said that overshot by 2-3 dB; +1.0 dB is the compromise (uncertainty about 1.5 dB).
+- **Sub range.** Clean to about 40 Hz, usable to 36 Hz, audible with 15%+ distortion at 25-31 Hz, nothing usable under 22 Hz
+  (mic and USB input also roll off there). No compression up to the loudest test level. Room modes: strong peak 56-63 Hz,
+  null 71-90 Hz, narrow +5 dB peak at 100 Hz at the seat.
+- **Loud-scene buzz (Dolby Amaze).** Recording shows a ~100 Hz component 13-18 dB under the fundamental on five different
+  bass hits, at the same frequency whatever the note: fits the room's 100 Hz peak ringing, not a mechanical rattle. Steady
+  tones did not reproduce any rattle, but they were 6 dB (rms) to 12 dB (peak) quieter than the film's 30-80 Hz content.
+  Open checks: CamillaDSP clipping log during the scene, `eq off` A/B, a burst-tone test at -4 dBFS.
+- **Standing profile.** `./set-eq.py` with no arguments applies `--set=drone2 --align --heights --heights-tone`;
+  `scripts/make-default.sh` applies it, enables both services and makes `mpv-atmos` call `eq ensure`.
+
+### Lessons
+
+- A steady-tone test does not reach a film's transient peaks; compare levels at the mic before concluding "no rattle".
+- Pure level-matching at a crossover is misleading when one driver has already rolled off: match to what the *other speakers* do.
+- Moving the mic between runs changes mid/high bins by several dB: judge by band averages and by what moved in the *other* channels.
+- A REW `.mdat` file is a Java serialisation; the frequency data and impulse response can be read with `javaobj-py3` (fields `splValues`, `phaseValues`, `irData`).

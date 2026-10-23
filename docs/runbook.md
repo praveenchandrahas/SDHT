@@ -22,6 +22,11 @@ starts or stops is normal. A continuous stream of them is not (see [troubleshoot
 EQ on is quieter, mostly in the bass (every filter is a cut and the trims are negative). Louder sounds better, so
 raise the Z906 knob slightly with EQ on before judging, or judge at matched level.
 
+## Standing profile
+
+`./set-eq.py` (no arguments) applies the standing profile: `--set=drone2 --align --heights --heights-tone`. `scripts/make-default.sh` applies it, enables
+`camilladsp.service` and `theater-router.service`, and makes `mpv-atmos` call `eq ensure`; `./make-default.sh --check` only reports.
+
 ## Presets
 
 `./scripts/set-eq.py [<scale> <max_freq_hz>] [--set=NAME] [--skip=a,b] [--align|--align=bed] [--invert=FC,...] [--dry]`

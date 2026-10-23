@@ -42,6 +42,29 @@ implausible asymmetric delays. The table above is from the corrected run. Levels
 These numbers are in the `ALIGN` table in `scripts/set-eq.py`. **`--align=bed` applies all rows except the heights**:
 the owner wanted the 5.1 bed correct first and is fine with heights running slightly hot. `--align` (no value) also applies the height delays.
 
+## Verification (2026-10-23, sweep run 1, CamillaDSP and `--align` active)
+
+Arrival at the seat relative to FL (mic at the cushion, first 300-4000 Hz rise of each sweep): FR -0.18, RL +0.06, RR -0.15,
+FC -0.08, SL +0.08, SR -0.12 ms. All within 0.2 ms, inside the measurement scatter and far inside the seating tolerance
+(1 ft = about 0.9 ms). The delay table is therefore correct as applied, heights included (`--align`, not `--align=bed`).
+
+The heights need 4.6 ms although the tape measure puts them about as far as FR. Untested explanation: the Z906 digital path
+adds about 4.5-5 ms that the analog Salcon path to the heights lacks.
+
+## Heights (2026-10-23): bass management and tone
+
+The heights (Samsung SWA-8500S on the Salcon amplifier) do not reproduce bass: 11 dB down at 125 Hz, 27 dB down at 100 Hz,
+essentially nothing under 90 Hz. Every bed speaker, by contrast, feeds the sub at the same level as the LFE input (the Z906
+does that bass management itself). `set-eq.py --heights` gives the heights the same treatment: LR4 high-pass at 140 Hz on
+RL/RR, their sum low-passed at 140 Hz and added to the LFE channel at 0 dB. Sweep run 2: at 40-63 Hz a height channel now
+plays 1.1-1.4 dB above a bed channel, at 100-125 Hz within 0.5-2.5 dB below.
+
+`--heights-tone` adds filters fitted to what both heights agree on, against the mean of the five bed speakers: -7.5 dB at
+310 Hz (Q 1.0), -7.0 dB at 1.7 kHz (Q 2.5), +2.5 dB high shelf at 6 kHz (Q 0.8), trim +1.0 dB. The 310 Hz and 1.7 kHz humps
+appear in three independent measurements (REW sweeps, pan test, sweep run 1). Narrow features that differ between RL and RR
+(500 Hz, 10 kHz) are left alone: one seat and one microphone position cannot support them. Moving the mic between runs changed
+single 1/6-octave bins by 3-7 dB.
+
 ## Tone differences noticed (not corrected yet)
 
 Before trims, SL measured brighter than FL (about +3 dB at 300-1000 Hz, +6 dB at 4-8 kHz); SR a little duller at 4-8 kHz.

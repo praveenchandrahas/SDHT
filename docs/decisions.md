@@ -27,7 +27,7 @@ at 72 and 84 Hz work without a dynamic processor. *Limit:* it also dents any mus
 Delays can only be added, so every speaker is delayed to match the farthest (FR); the heights end up with the largest
 delays but nothing else depends on them. (First idea, delaying the whole bed for the heights' sake, was rejected: get the 5.1 bed right first.)
 
-## D7. `--align=bed` leaves the heights alone
+## D7. `--align=bed` leaves the heights alone (superseded by D14: the owner now runs `--align` with the heights)
 The owner is fine with heights slightly hot and mostly relies on the bed for imaging. The height delay and trim numbers
 are measured and stored (`ALIGN`) but only applied with `--align` (no value).
 
@@ -52,3 +52,21 @@ The tuning assumes the Z906 sub level as it is. Change the master volume freely;
 
 ## D13. No night preset
 This rig is for full, object-rendered film sound. For late-night or neighbour-sensitive viewing the owner switches to the family TV and soundbar instead of adding a quiet-hours preset (reduced bass, compressed dynamics) here. *Revisit* only if that changes.
+
+## D14. The heights get bass management and tone-matching in CamillaDSP
+Heights barely reproduce bass; bed channels already feed the sub via the Z906. A 9th internal channel (RL+RR, low-passed at
+140 Hz LR4) is added to the LFE at 0 dB and RL/RR are high-passed at 140 Hz. Chosen from sweep run 1: best fit to the bed's
+response over 40-400 Hz; delay and polarity do not matter, so none are applied (`--heights-delay`, `--heights-invert` exist).
+*Cost:* more bass in the sub from height-heavy scenes (back it off with `--heights-lfe=-2` if the sub is overloaded).
+
+## D15. Height tone filters correct only what both heights agree on
+Three filters plus a trim, fitted to the bed mean; narrow, channel-specific features are left alone because a one-seat,
+one-microphone measurement changes them by 3-7 dB when the mic moves. Trim +1.0 dB is a compromise between two runs.
+
+## D16. A standing profile with automatic start
+`./set-eq.py` with no arguments is the standing profile (`DEFAULT_ARGS`). The profile lives in CamillaDSP's config file, so it
+survives reboots; `eq ensure` (called by `mpv-atmos`) starts CamillaDSP and the router if either is down. *Revisit* if more
+players than mpv-atmos should start the services.
+
+## D17. Do not chase the sub below 30 Hz in the apartment
+Usable output ends near 30 Hz and film content under 25 Hz is rare. Revisit when moving to the independent house.

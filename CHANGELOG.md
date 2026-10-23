@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-23
+- `set-eq.py`: `--heights` (LR4 high-pass on the heights, their bass summed into the LFE), `--heights-hp/-lfe/-delay/-invert`,
+  `--heights-tone` (fitted tone filters and trim), and the standing profile (no arguments or `--default`).
+- `theater-route`: `eq ensure` (starts CamillaDSP and the router if down); `eq status` reports the heights processing.
+- `scripts/make-default.sh`; `mpv-atmos` calls `eq ensure` first.
+- `tools/sweeptest/`, `tools/subtest/`: measurement through CamillaDSP (alignment, heights fit, sub range, rattle hunt).
+- Docs: alignment verification, heights section, sub range and the Amaze buzz investigation, decisions D14-D17.
+
 ## 2026-10-21 (later)
 - Added `docs/omniphony-debugging.md`, `docs/technical-writeup.md`, a whole-system diagram, and README credits for Omniphony, harletty-bridge and truehdd.
 
