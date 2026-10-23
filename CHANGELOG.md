@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-10-23
+- `tools/dialoguetest/` (dialogue test kit: FC response, phantom vs real centre, C50/RT60/STI, noise) and `tools/reflecttest/` (early-reflection analysis and panels A/B method).
 - `set-eq.py`: `--heights` (LR4 high-pass on the heights, their bass summed into the LFE), `--heights-hp/-lfe/-delay/-invert`,
   `--heights-tone` (fitted tone filters and trim), and the standing profile (no arguments or `--default`).
 - `theater-route`: `eq ensure` (starts CamillaDSP and the router if down); `eq status` reports the heights processing.

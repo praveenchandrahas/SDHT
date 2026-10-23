@@ -90,3 +90,17 @@ Centre polarity checked and found fine; the owner chose not to invert anything.
 - Pure level-matching at a crossover is misleading when one driver has already rolled off: match to what the *other speakers* do.
 - Moving the mic between runs changes mid/high bins by several dB: judge by band averages and by what moved in the *other* channels.
 - A REW `.mdat` file is a Java serialisation; the frequency data and impulse response can be read with `javaobj-py3` (fields `splValues`, `phaseValues`, `irData`).
+
+## 2026-10-23: before / after EQ against the full REW set (19 Oct, no DSP, all eight speakers)
+
+Compared with the sweep test of 23 Oct (final profile), matched through FL's 500 Hz-2 kHz level and the iMM-6S calibration
+(different days, so single bins carry seat-to-seat noise; a reconstruction of the "before" from the later sweeps by undoing the
+known filters agreed with the real REW curves to 2.3-3.0 dB rms, which is the noise floor of the method).
+
+- Bass hump (50-70 Hz over the 300-400 Hz level), mean of the five bed speakers: +31 dB before, +24 dB after (deliberately kept).
+- Level spread of the five bed speakers (500 Hz-2 kHz): 4.7 dB before, 1.6 dB after; heights +4.3/+3.3 dB re FL before, +1.7/+2.4 after.
+- Arrival spread of all seven (ms): about 4.9 before the delays, 0.6 after.
+- Heights, bass gap to the bed (40-400 Hz, rms): 25/28 dB before, 4.0/3.4 dB after.
+- Heights, tone against the bed (170 Hz-12.5 kHz, rms): 3.4/3.7 dB before, 2.9/3.3 dB after. The gain against the REW baseline
+  is about 0.5 dB, smaller than the 4.5/4.1 -> 3.1/3.5 dB seen between the two same-session sweeps; the 250-315 Hz and 1.6 kHz
+  humps were cut (about +9 and +7 dB before) but not removed.

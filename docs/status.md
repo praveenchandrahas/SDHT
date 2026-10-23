@@ -14,8 +14,9 @@ Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording o
 | Standing profile (`./make-default.sh`, `eq ensure` in mpv-atmos) survives reboot and starts the services | Config file persistence and tests only | **Not yet tested on the real system** |
 | Auto-routing starts with the system and handles mpv, stereo, 5.1 and 8 channels | Simulated PipeWire graph only (`tests/test_router.py`) | **Not yet tested on the real system** |
 | The `eq` switch works mid-film | Simulated only | **Not yet tested** |
-| Lip-sync is fine with CamillaDSP in the path | Not checked; estimated added delay 20-45 ms | **Not yet tested** |
-| Dialogue is clear and anchored to the screen | Not tested | **Not yet tested** |
+| Lip-sync is fine with CamillaDSP in the path | Owner: no lip-sync issue at all on real material; not measured (estimated added delay was 20-45 ms) | Owner-verified (listening) |
+| Dialogue is clear and anchored to the screen | Owner: dialogue is fine; `tools/dialoguetest/` built (checked against a simulated room) but not yet run in the room | Owner-verified (listening), not measured |
+| First-reflection panels (FL, FC, FR, heights) work | `tools/reflecttest/` on sweep run 2 (panels in place, no baseline): FC and FR OK against ITU-R BS.1116 (every reflection 10 dB under the direct sound); FL one reflection at 5.1 ms, -8 dB; both heights a reflection near -1 dB at 3.6-3.8 ms. A/B with panels covered not yet done | Measured (state), **effect untested** |
 
 ## Checks still to do
 
