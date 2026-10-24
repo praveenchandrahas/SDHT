@@ -97,7 +97,8 @@ the room gives one big bass hump near 60 Hz, so the stage is tuned from recordin
 | **EQ switch** | `eq off` / `eq on` / `eq toggle` / `eq status`: bypass all DSP instantly, mid-film | same script, installed as `eq` |
 | **Preset switcher** | Writes the CamillaDSP config for a named bass preset plus alignment, heights processing and upmix, validates it, restarts the service and relinks. With no arguments it loads the **standing profile** | `scripts/set-eq.py`, `scripts/make-default.sh` |
 | **Heights processing** | LR4 high-pass at 140 Hz on the heights, their bass summed into the LFE, fitted tone filters and a +1.0 dB trim (`--heights`, `--heights-tone`) | `scripts/set-eq.py` |
-| **Upmix** | Stereo to 5.1.2 and 5.1 bed to 5.1.2 (`--upmix=stereo\|bed[:flavour]`), three flavours each | `scripts/upmix.py` |
+| **Upmix** | Stereo to 5.1.2 (fixed matrix, or adaptive with `stereo-ad`) and 5.1 bed to 5.1.2 (`--upmix=stereo\|stereo-ad\|bed[:flavour]`), three flavours each | `scripts/upmix.py` |
+| **Adaptive ambience engine** | Streaming STFT process that separates direct sound from ambience and feeds only the ambience to the surrounds and heights; about 4 % of one core, 21 ms on the rear feeds only; started by the router, falls back to the fixed matrix if it does not come up | `scripts/upmix_engine.py` (`eq engine`) |
 | **Automatic profile** | Chrome playing selects the stereo upmix; for mpv the source is read over IPC (Atmos is film, 5.1 is bed, stereo is stereo upmix); idle is film | `scripts/theater-route` (`eq mode`, `eq source`) |
 | **Measurement kits** | Chirp delay test, sweep test, sub test, dialogue test, early-reflection analysis, bar test, upmix evaluation | `tools/` (see layout below) |
 | **Tests** | Router and config-generator tests (51 router checks) that need no audio hardware | `tests/run.sh` |
@@ -116,7 +117,7 @@ Current tuning is the **standing profile**, `./scripts/set-eq.py` with no argume
 *Values as recorded in [status.md](docs/status.md) and [alignment.md](docs/alignment.md), from the 2026-10-23 sweep runs. The
 raw recordings are not in the repository. The heights "before" figure is approximate (about 40 dB).*
 
-The upmix presets are measured offline only so far. The adaptive-ambience prototype (not in the signal path) separates
+The upmix presets are measured offline only so far. The adaptive ambience engine (`scripts/upmix_engine.py`, used by the stereo upmix by default, with an automatic fall-back to the fixed matrix; not yet run against real PipeWire) separates
 instrument from ambience far better than the fixed side-signal matrix on spectrally sparse sources, and no better on noise
 ([tools/upmixtest](tools/upmixtest/README.md)):
 
