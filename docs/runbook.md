@@ -58,7 +58,27 @@ Flavours: `voice` (talking heads, conservative), `balanced` (default), `wide` (m
 in the same CamillaDSP config, so FL/FR/FC get no extra delay (checked: same impulse sample index) and lip-sync is unchanged.
 Limits: it is a fixed matrix. It cannot steer a moving source, a hard-panned instrument leaks into the centre/surrounds at a reduced level, and uncorrelated
 L/R become somewhat anti-correlated at the fronts (about -0.4 balanced). Pick the flavour by ear. Offline checks: `tools/upmixtest/`.
-Chrome's audio still has to reach CamillaDSP's FL/FR inputs (the router extension is not built yet; see docs/status.md).
+### Automatic profile (the default)
+
+The router daemon picks the profile from what is playing; nothing to type. `eq mode auto` is the default.
+
+| Playing | Profile | What the router does |
+|---------|---------|----------------------|
+| Chrome (any PipeWire node whose name matches `THEATER_STEREO_APPS`, default `chrom`) | `stereo` | Switches CamillaDSP to the stereo upmix, links Chrome's FL/FR to CamillaDSP inputs 1-2 (make before break) and drops its direct links. |
+| mpv, Atmos track (codec profile contains "Atmos") | `film` | No upmix; Omniphony's own 5.1.2 render goes through as before. |
+| mpv, 6-channel track | `bed` | 5.1 -> 5.1.2 bed upmix. |
+| mpv, 1-2 channel track | `stereo` | Stereo upmix. |
+| mpv, anything else (7.1, unknown) | `film` | No upmix. |
+| nothing for `THEATER_IDLE_RESET` (120 s) | `film` | Next film starts clean. A paused video does not flip the profile. |
+
+mpv wins when both play. The source is read from mpv's IPC socket (`current-tracks/audio`: codec profile and channel count), so mpv needs
+`input-ipc-server`; `mpv-atmos` passes it and also runs `eq prepare FILE` before starting mpv, so the right profile is already active and nothing switches
+mid-film. For plain `mpv`, put `input-ipc-server=/run/user/1000/theater-mpv.sock` in `~/.config/mpv/mpv.conf` (use your own UID).
+If mpv does not report a track within 8 s the router assumes `film`. A switch restarts CamillaDSP (about a second of silence) and is rate-limited to one per 8 s.
+
+Commands: `eq mode auto|film|stereo|bed` (fixed override until `auto`), `eq flavour stereo|bed NAME`, `eq source` (what mpv reports and how it is classified;
+paste it if detection looks wrong), `eq status` (profile, Chrome patch state, source). With `eq off` nothing is switched or patched.
+Not verified on the real system yet: Chrome's PipeWire node name (check `eq status` while Chrome plays) and whether WirePlumber leaves a re-linked Chrome stream alone.
 
 ## Z906 rules
 
