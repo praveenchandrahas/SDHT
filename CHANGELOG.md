@@ -10,7 +10,7 @@
 - Docs: alignment verification, heights section, sub range and the Amaze buzz investigation, decisions D14-D17.
 
 ## 2026-10-24
-- Reboot test on the real system: services and standing profile up at boot, `mpv-atmos` plays Atmos 8 ch (docs/status.md).
+- Reboot test on the real system: services and standing profile up at boot; routing showed no links in one `eq status` (docs/status.md), under investigation.
 - `make-subtest.py --boost=X` (+X dB on sweeps and tones, refused above -1 dBFS), `phone-to-wav.sh`, second hot-run procedure in tools/subtest/README.md.
 
 ## 2026-10-21 (later)
