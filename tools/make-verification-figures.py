@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Summary figures for the README, drawn from the numbers recorded in docs/status.md, docs/alignment.md and
 tools/upmixtest/README.md. These are the documented summary values, not re-analysed recordings: the raw sweep
-recordings are not in the repository (see data/README.md). Output: docs/img/verification-summary.png, upmix-adaptive-vs-fixed.png"""
+recordings are not in the repository (see data/README.md). Output: docs/graphs/10_verification_summary.png, 11_upmix_adaptive_vs_fixed.png"""
 import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "img")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "graphs")
 C1, C2, GREY = "#2a6fb0", "#d9822b", "#8a8a8a"
 plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False})
 
@@ -51,7 +51,7 @@ ax[2].set_title("Heights bass management and tone-match\n(mean of RL and RR)", f
 ax[2].legend(frameon=False)
 fig.suptitle("Verification summary, 2026-10-23 sweep runs (documented values, see docs/status.md)", fontsize=10)
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "verification-summary.png"), dpi=160)
+fig.savefig(os.path.join(OUT, "10_verification_summary.png"), dpi=160)
 
 # 4. upmix: fixed side-signal matrix vs adaptive ambience, tools/upmixtest/README.md
 fig, ax = plt.subplots(figsize=(6.4, 3.4))
@@ -67,5 +67,5 @@ ax.set_ylabel("ambience minus instrument leak (dB)")
 ax.set_title("Adaptive ambience prototype (offline, not in the signal path)", fontsize=9)
 ax.legend(frameon=False)
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "upmix-adaptive-vs-fixed.png"), dpi=160)
+fig.savefig(os.path.join(OUT, "11_upmix_adaptive_vs_fixed.png"), dpi=160)
 print("ok")

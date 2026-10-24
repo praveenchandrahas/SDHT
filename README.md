@@ -112,7 +112,7 @@ Current tuning is the **standing profile**, `./scripts/set-eq.py` with no argume
 
 ![Predicted effect of drone2 at the seat](docs/img/bass-response-drone2.png)
 
-![Verification summary](docs/img/verification-summary.png)
+![Verification summary](docs/graphs/10_verification_summary.png)
 
 *Values as recorded in [status.md](docs/status.md) and [alignment.md](docs/alignment.md), from the 2026-10-23 sweep runs. The
 raw recordings are not in the repository. The heights "before" figure is approximate (about 40 dB).*
@@ -121,7 +121,7 @@ The upmix presets are measured offline only so far. The adaptive ambience engine
 instrument from ambience far better than the fixed side-signal matrix on spectrally sparse sources, and no better on noise
 ([tools/upmixtest](tools/upmixtest/README.md)):
 
-![Adaptive ambience vs fixed matrix](docs/img/upmix-adaptive-vs-fixed.png)
+![Adaptive ambience vs fixed matrix](docs/graphs/11_upmix_adaptive_vs_fixed.png)
 
 ### Daily use
 
@@ -159,11 +159,11 @@ scripts/     things you run: mpv-atmos (+ overlay-off.lua), theater-route (+ `eq
              set-eq.py, upmix.py, route-mpv.sh, rec.sh, tone-test.sh, make-delaytest.py, make-bedtest.py
 tools/       analysis and measurement kits: analyze-delaytest.py, sweeptest/, subtest/, dialoguetest/, reflecttest/,
              bartest/, upmixtest/, plus the diagram and figure generators (make-architecture-diagram.py,
-             make-system-overview.py, make-verification-figures.py)
+             make-system-overview.py, make-graphs.py, make-verification-figures.py)
 configs/     example generated CamillaDSP config, systemd unit files
 data/        small REW measurement exports (see data/README.md)
 tests/       tests/run.sh: router + config tests, no hardware needed
-docs/        the documentation (start with architecture.md and runbook.md)
+docs/        the documentation (start with architecture.md and runbook.md); docs/graphs/ holds every graph
 ```
 
 ## Quick start on a new machine
@@ -186,3 +186,68 @@ current `mpv.conf`, the media-library mount and the laptop-to-projector HDMI pat
 The tuning decisions, measurements, listening tests and the build itself are the owner's. The scripts, analysis code
 and first drafts of these documents were written with Claude (Anthropic) during working sessions on
 2026-10-20 to 2026-10-24. Licensed under the [Apache License 2.0](LICENSE). The projects credited above have their own licences.
+
+## Appendix: the main graphs
+
+All eleven graphs are in [docs/graphs/](docs/graphs/) (index and sources in its [README](docs/graphs/README.md)); these are the seven
+that matter most. Every figure says in its caption which parts are real REW data, which are computed from the filter definitions
+in `scripts/set-eq.py`, and which are values quoted from the measurement reports (the raw sweep recordings are not in this repository).
+
+### A1. The bass problem and the drone2 fix
+
+![Bass before and after](docs/graphs/01_bass_before_after.png)
+
+The Z906 sends every channel's bass to its sub, and the room adds a strong mode at 56 to 63 Hz, so the seat sees a hump of about
+30 dB over the mids. `drone2` flattens the drone region and keeps the thump on purpose.
+
+### A2. Prediction against recording
+
+![drone2 predicted vs recorded](docs/graphs/03_drone2_predicted_vs_recorded.png)
+
+The computed filter curve against the band changes recorded on the quiet Tenet scene (neither recording clipped): within about 1 to 2 dB.
+
+### A3. Alignment: delays and trims
+
+![Alignment](docs/graphs/04_alignment.png)
+
+All eight speakers arrive within 0.2 ms of the front left (sweep run 1). Levels sit within about 2 dB, which is the limit of mic-position repeatability.
+The "before" arrivals are reconstructed from the delay table, not measured.
+
+### A4. Heights: tone-match and bass management
+
+![Heights](docs/graphs/05_heights.png)
+
+The ceiling speakers have no output below about 125 Hz, so their bass is sent to the sub (bass gap to the bed from about 25 dB rms to under 4 dB), and three
+fitted filters pull their tone towards the bed. The tone gain is modest on the 19 Oct baseline (about 0.5 dB) and larger in the two same-session sweeps (4.5/4.1 to 3.1/3.5 dB).
+
+### A5. The sub and the room modes
+
+![Sub and room modes](docs/graphs/06_sub_and_room_modes.png)
+
+Clean to about 40 Hz, usable to 36 Hz, audible but 14 to 16 per cent distorted at 25 to 32 Hz, nothing usable under 22 Hz, and no compression. The stepped-tone
+rattle hunt found nothing that grew out of proportion; the loud-scene buzz is still open ([status](docs/status.md)).
+
+### A6. Dialogue
+
+![Dialogue](docs/graphs/07_dialogue.png)
+
+Intelligibility is in the "excellent" range and the dialogue sits 13 to 18 dB above the room noise in every octave band. These values come from the dialogue-kit report
+quoted in the working session of 2026-10-24; [status.md](docs/status.md) still lists the kit as not yet run in the room, so treat this figure as unreconciled until that line is updated.
+
+### A7. Early reflections
+
+![Early reflections](docs/graphs/08_early_reflections.png)
+
+Centre and front right meet the ITU-R BS.1116 limit; the front left has one reflection at 5.1 ms (-8 dB) and both heights have one about 1 dB below the direct sound at
+3.6 to 3.8 ms. There is no panels-off baseline yet, so this shows where the energy is, not what the panels do.
+
+### Also in the folder
+
+| File | Shows |
+|---|---|
+| `02_filter_sets.png` | Predicted response of each bass preset, and the predicted bass-to-mids balance on the two test items |
+| `09_before_after_summary.png` | Bass hump, bed level spread, arrival spread and the heights' bass gap, before and after |
+| `10_verification_summary.png` | Delays, levels and heights results of the 23 Oct sweep runs |
+| `11_upmix_adaptive_vs_fixed.png` | Adaptive ambience prototype against the fixed matrix (offline only) |
+
+Regenerate with `python3 tools/make-graphs.py` and `python3 tools/make-verification-figures.py` (numpy and matplotlib).

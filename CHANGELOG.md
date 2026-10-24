@@ -10,7 +10,8 @@
 - Docs: alignment verification, heights section, sub range and the Amaze buzz investigation, decisions D14-D17.
 
 ## 2026-10-24
-- README brought up to date (verification table, standing profile, heights, upmix, automatic profile, tool layout); `tools/make-verification-figures.py` and `docs/img/verification-summary.png`, `docs/img/upmix-adaptive-vs-fixed.png` drawn from the values recorded in status.md and the upmixtest README (raw sweep recordings are not in the repo).
+- `tools/make-graphs.py` and `docs/graphs/` (eleven graphs, index in its README); README appendix with the seven main ones. Curves that need the raw recordings are not redrawn (the recordings are not in the repo).
+- README brought up to date (verification table, standing profile, heights, upmix, automatic profile, tool layout); `tools/make-verification-figures.py` and `docs/graphs/10_verification_summary.png`, `docs/graphs/11_upmix_adaptive_vs_fixed.png` drawn from the values recorded in status.md and the upmixtest README (raw sweep recordings are not in the repo).
 - Reboot test on the real system: services and standing profile up at boot, run away from the rig (no Vantec), so routing is still to be checked at the rig (docs/status.md).
 - `eq status` now says "USB interface not connected" instead of "mixed or unfinished routing" when the Vantec is absent.
 - `make-subtest.py --boost=X` (+X dB on sweeps and tones, refused above -1 dBFS), `phone-to-wav.sh`, second hot-run procedure in tools/subtest/README.md.
