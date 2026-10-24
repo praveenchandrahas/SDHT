@@ -10,7 +10,8 @@
 - Docs: alignment verification, heights section, sub range and the Amaze buzz investigation, decisions D14-D17.
 
 ## 2026-10-24
-- Reboot test on the real system: services and standing profile up at boot; routing showed no links in one `eq status` (docs/status.md), under investigation.
+- Reboot test on the real system: services and standing profile up at boot, run away from the rig (no Vantec), so routing is still to be checked at the rig (docs/status.md).
+- `eq status` now says "USB interface not connected" instead of "mixed or unfinished routing" when the Vantec is absent.
 - `make-subtest.py --boost=X` (+X dB on sweeps and tones, refused above -1 dBFS), `phone-to-wav.sh`, second hot-run procedure in tools/subtest/README.md.
 
 ## 2026-10-21 (later)
