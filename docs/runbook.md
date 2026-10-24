@@ -71,7 +71,7 @@ The router daemon picks the profile from what is playing; nothing to type. `eq m
 | mpv, anything else (7.1, unknown) | `film` | No upmix. |
 | nothing for `THEATER_IDLE_RESET` (120 s) | `film` | Next film starts clean. A paused video does not flip the profile. |
 
-mpv wins when both play. The source is read from mpv's IPC socket (`current-tracks/audio`: codec profile and channel count), so mpv needs
+mpv wins when both play, so a Chrome ping (WhatsApp, say) during a film changes nothing and goes to the default sink untouched. Chrome must keep playing for `THEATER_APP_GRACE` (4 s) before it counts, so a ping with nothing else playing does not restart CamillaDSP. The source is read from mpv's IPC socket (`current-tracks/audio`: codec profile and channel count), so mpv needs
 `input-ipc-server`; `mpv-atmos` passes it and also runs `eq prepare FILE` before starting mpv, so the right profile is already active and nothing switches
 mid-film. For plain `mpv`, put `input-ipc-server=/run/user/1000/theater-mpv.sock` in `~/.config/mpv/mpv.conf` (use your own UID).
 If mpv does not report a track within 8 s the router assumes `film`. A switch restarts CamillaDSP (about a second of silence) and is rate-limited to one per 8 s.
