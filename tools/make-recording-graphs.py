@@ -144,7 +144,7 @@ def sweep_figures(p1, p2):
     axs[0].set_ylabel("dB re the mean of the five bed speakers, 1/6 octave")
     axs[0].text(0.99, 0.03, "grey lines: the five bed speakers", transform=axs[0].transAxes, ha="right", fontsize=7.5, color="#888")
     save(fig, "12_heights_tone_before_after", "Real recordings (sweep1.wav, sweep2.wav, 23 Oct, CamillaDSP in the path, deconvolved with the sweep-test analyser). The mic was not in exactly the same spot between the runs: "
-         "single bins move 3-7 dB and the bed speakers themselves moved up to 5-7 dB at 310 Hz, so judge the band averages. The +1.0 dB trim was set after run 2 (run 2 had +3.0 dB).")
+         "single bins move 3-7 dB and the bed speakers themselves moved up to 5-7 dB at 310 Hz, so judge the band averages. The sweep analyser's own values for the same data are 4.5/4.1 dB before and 3.1/3.5 dB after (170 Hz-12.5 kHz). The +1.0 dB trim was set after run 2 (run 2 had +3.0 dB).")
 
     # --- heights bass, own 400-1000 Hz level
     fig, axs = plt.subplots(1, 2, figsize=(11.5, 4.2), sharey=True)
@@ -162,10 +162,10 @@ def sweep_figures(p1, p2):
     axs[0].set_ylabel("dB re each curve's own 400 Hz-1 kHz level")
     d2 = {n: db(c2[n]) - db(c2["bed"]) for n in ("RL", "RR")}
     d1 = {n: db(c1[n]) - db(c1["bed"]) for n in ("RL", "RR")}
-    axs[1].text(0.02, 0.05, f"heights vs bed, 40-400 Hz rms (absolute dB):\nbefore {np.sqrt(np.mean(d1['RL'][lf] ** 2)):.0f} / {np.sqrt(np.mean(d1['RR'][lf] ** 2)):.0f} dB, after {np.sqrt(np.mean(d2['RL'][lf] ** 2)):.1f} / {np.sqrt(np.mean(d2['RR'][lf] ** 2)):.1f} dB (RL / RR)",
+    axs[1].text(0.02, 0.05, f"heights vs bed, 40-400 Hz rms, 1/6-oct smoothing:\nbefore {np.sqrt(np.mean(d1['RL'][lf] ** 2)):.0f} / {np.sqrt(np.mean(d1['RR'][lf] ** 2)):.0f} dB, after {np.sqrt(np.mean(d2['RL'][lf] ** 2)):.1f} / {np.sqrt(np.mean(d2['RR'][lf] ** 2)):.1f} dB (RL / RR)",
                 transform=axs[1].transAxes, fontsize=8)
     save(fig, "13_heights_bass", "Real recordings, sweep run 1 and run 2. Each curve is normalised to its own 400 Hz-1 kHz level, so the plot shows bass relative to the mids. After: the sub reproduces the heights' bass, "
-         "so the low end lines up with the bed. The rms figures in the box use the raw (un-normalised) difference to the bed, as in docs/status.md.")
+         "so the low end lining up with the bed is expected by construction: it shows the bass management works as designed, not that the bass is right. The rms figures in the box use the raw (un-normalised) difference to the bed with 1/6-octave smoothing; the sweep analyser's per-bin figure for the heights alone is 41 dB (docs/status.md), the same gap measured more harshly.")
 
     # --- each speaker vs the bed (final profile)
     fig, ax = plt.subplots(figsize=(9.5, 4.2))
@@ -207,20 +207,21 @@ def sweep_figures(p1, p2):
     ax.legend(fontsize=7.5, loc="upper left")
     ax.set_title(f"Arrival spread: {max(bef1) - min(bef1):.1f} ms before, {max(aft1) - min(aft1):.2f} / {max(aft2) - min(aft2):.2f} ms after")
     ax = axs[1]
-    mid = (GRID >= 500) & (GRID <= 2000)
-    lv = lambda c: [db(np.mean(c[n][mid])) - db(np.mean(c["FL"][mid])) for n in order]
+    def lv(sp):
+        e = {n: np.sum(v["p"][(v["f"] >= 500) & (v["f"] <= 2000)]) for n, v in sp.items()}
+        return [10 * np.log10(e[n] / e["FL"]) for n in order]
     x = np.arange(len(order))
     ax.axhspan(-2, 2, color=GREY, alpha=0.15, lw=0)
-    ax.bar(x - 0.2, lv(c1), 0.4, color=GREEN, label="run 1")
-    ax.bar(x + 0.2, lv(c2), 0.4, color=BLUE, label="run 2 (mic moved a little; heights +3 dB trim)")
+    ax.bar(x - 0.2, lv(s1), 0.4, color=GREEN, label="run 1")
+    ax.bar(x + 0.2, lv(s2), 0.4, color=BLUE, label="run 2 (mic moved; heights at +3 dB trim)")
     ax.set_xticks(x)
     ax.set_xticklabels(order)
     ax.set_ylabel("level 500 Hz-2 kHz re FL (dB)")
-    ax.set_title("Levels after the trims")
+    ax.set_title("Levels after the trims (about 2.5 dB at most within a run)")
     ax.legend(fontsize=7.5)
     lfe = f"sub (LFE): arrives {s1['LFE']['t'] - s1['FL']['t']:+.1f} ms after FL by envelope, group delay 50-100 Hz about +15 ms (its own filters included)"
-    save(fig, "15_timing_and_level", "Real recordings. 'Before' = the measured arrival minus the delay set-eq.py applies (the REW sweeps carry no timing reference). " + lfe +
-         ". The LFE delay is currently kept equal to FL's (0.20 ms) because the sub's own arrival had not been measured.")
+    save(fig, "15_timing_and_level", "Real recordings (levels: 500 Hz-2 kHz band energy from these sweeps; the sweep analyser's own report differs by up to 0.5 dB, e.g. SR +1.7 dB in run 1). The same speaker moves by about 2.3 to 2.5 dB between the runs (SL +0.9 to -1.4 dB in the analyser's report), so the trims are good to roughly 2 dB, not better. 'Before' = the measured arrival minus the delay set-eq.py applies (the REW sweeps carry no timing reference). " + lfe +
+         ". The sub arrives 6 to 7 ms late in both runs. Its delay is currently kept equal to FL's (0.20 ms) because its arrival had not been measured before.")
     return s1, s2
 
 
@@ -343,16 +344,18 @@ def sub_figures(path):
     comp = resp[:, 5]
     ax.axhline(0, color="k", lw=0.5)
     ax.axhspan(-1.5, 1.5, color=GREY, alpha=0.15, lw=0)
-    ax.semilogx(resp[:, 0], resp[:, 4], color=BLUE, marker="o", ms=3, label="-30 to -22 dBFS")
-    ax.semilogx(resp[:, 0], resp[:, 5], color=ORANGE, marker="o", ms=3, label="-22 to -14 dBFS")
-    ax.set_ylim(-5, 5)
-    logticks(ax, [10, 16, 25, 40, 63, 100, 160], 10, 180)
+    okf = resp[:, 0] >= 22
+    ax.semilogx(resp[okf, 0], resp[okf, 4], color=BLUE, marker="o", ms=3, label="-30 to -22 dBFS")
+    ax.semilogx(resp[okf, 0], resp[okf, 5], color=ORANGE, marker="o", ms=3, label="-22 to -14 dBFS")
+    ax.set_ylim(-3, 4)
+    logticks(ax, [25, 40, 63, 100, 160], 22, 180)
+    ax.text(0.03, 0.04, "below 22 Hz: mic and noise,\nnot shown", transform=ax.transAxes, fontsize=7.5, color="#777")
     ax.set_xlabel("Hz")
     ax.set_ylabel("compression (dB; 0 = linear)")
     ax.set_title("Compression between levels")
     ax.legend(fontsize=7.5)
     save(fig, "06_sub_range_and_distortion", "Real recording (sub-sweep.wav), tools/subtest analyser: three 8-200 Hz sweeps on the LFE channel. The mic and its USB input roll off below about 20 Hz, so read the comparison between levels, "
-         "not the absolute bottom. Compression: no more than about 2.5 dB between -22 and -14 dBFS at 25-30 Hz (the sub runs out of excursion), none above 35 Hz. Distortion estimates below about -45 dB are room noise.")
+         "not the absolute bottom. Compression is shown from 22 Hz up (below that the mic and room noise dominate and the values swing wildly): about 2 to 3 dB between -30 and -22 dBFS at 22-25 Hz, none above 35 Hz. 'Clean' in the README means harmonics below -30 dB (3 %), the analyser's own scale: 2 % at 40 Hz at -14 dBFS, 5 % at 36 Hz. Distortion estimates below about -45 dB are room noise.")
     # --- rattle hunt, from the report table
     i2 = next(i for i, l in enumerate(lines) if l.strip().startswith("Hz") and "level(q)" in l)
     tones = []
@@ -427,7 +430,7 @@ def hot_figure(path):
     n_cap = int(np.sum(rows[:, 1] > 0.98 * ceiling))
     fig.suptitle(f"Hot sub run: {n_cap} of {len(rows)} loud tones peak at the same level, {ceiling:.3f} (dashed), whatever their frequency", fontsize=9.5)
     save(fig, "17_hot_sub_run", "Real recording (subtest-hot.wav), loud pass. The same peak on every tone from 31.5 to 71 Hz is what a limiter or a capped input does; a resonance or a rattle would not behave the same at eight frequencies. "
-         "The 50 and 71 Hz waveforms are clean sines that just reach the cap, while 40 and 56 Hz are visibly distorted. This recording cannot say whether the limit is in the sub path or the capture chain; a quieter run with the mic farther away would show.")
+         "The 50 and 71 Hz waveforms are clean sines that just reach the cap, while 40 and 56 Hz are visibly distorted. This recording cannot say whether the limit is in the sub path or the capture chain; a quieter run with the mic farther away would show. The distortion figures (fig 06) were taken at -14 dBFS, below this cap, but that does not prove the capture chain is linear up to it.")
     return rows, ceiling
 
 
@@ -493,7 +496,7 @@ def dialogue_figure(path):
     ax.legend(loc="lower left", fontsize=8)
     ax.set_title("Dialogue to noise (dB shown in the fill)")
     save(fig, "07_dialogue", "Real recording (dlg1.wav, one seat, one mic position; the recording stopped before the end chirps). Differences under about 2 dB per band or 0.03 STI are within repeatability. "
-         "STI is a STIPA-style estimate without auditory masking, not a certified measurement. Boom 100-200 Hz +5.7 dB and presence 2-4 kHz -3.3 dB re 500-1000 Hz.")
+         "STI is a STIPA-style estimate without auditory masking, not a certified measurement; the 'IR, no noise' bar is the room alone and is not a listening condition. Noise-floor values above 4 kHz may be the capture chain's own floor. The state of the projector fan during the noise measurement was not recorded. Boom 100-200 Hz +5.7 dB and presence 2-4 kHz -3.3 dB re 500-1000 Hz.")
     return sti
 
 
@@ -574,7 +577,7 @@ def tenet_figure(p_direct, p_drone):
     ax.set_title("Last 15 s, fine spectrum (dotted: 48, 56, 64 Hz)")
     ax.legend(fontsize=7.5)
     save(fig, "03_drone2_predicted_vs_recorded", "Real recordings: Tenet 'freeport', direct against drone2, aligned on the >500 Hz band (which the EQ does not change). The recorded change in the last 15 s is compared with the change the drone2 filters predict. "
-         "Neither recording clips. Raw recordings of copyrighted film audio are not in the repository.")
+         "One film scene; the last 15 s hold most of the bass energy, so the comparison is only as broad as that scene. Neither recording clips. Raw recordings of copyrighted film audio are not in the repository.")
     return cent, pred, delta
 
 
@@ -591,7 +594,8 @@ def amaze_figure(path):
     ff, tt, Sx = spectrogram(x, FS, nperseg=2 ** 15, noverlap=2 ** 15 - FS // 4, window="hann")
     mm = (ff >= 30) & (ff <= 200)
     Z = 10 * np.log10(Sx[mm] + 1e-20)
-    ax.pcolormesh(tt, ff[mm], Z, vmin=Z.max() - 55, vmax=Z.max(), shading="auto", cmap="viridis")
+    pm = ax.pcolormesh(tt, ff[mm], Z, vmin=Z.max() - 55, vmax=Z.max(), shading="auto", cmap="viridis")
+    fig.colorbar(pm, ax=ax, label="dB re the loudest cell (uncalibrated)", pad=0.01)
     ax.axhline(100, color="white", lw=0.7, ls=":")
     ax.set_xlabel("s")
     ax.set_ylabel("Hz")

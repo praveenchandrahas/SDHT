@@ -12,3 +12,10 @@ Search the docs for `TODO(owner)`. Checklist:
 - [ ] Exact room dimensions (notes from 2026-10-19 said about 10 x 11 ft; later 10 x 10 ft) and a floor plan with seat and speaker positions
 - [ ] Paths of the Omniphony and mpv configuration for the backup list in [runbook.md](runbook.md#backups)
 - [ ] Decide what to keep out of a public repository (library mount details, personal details)
+- [ ] Bill of materials with sources and prices
+- [ ] CPU and latency of the live decode and render chain (the 4 % / 21 ms figures are for the upmix engine only)
+- [ ] Whether DTS:X works on this rig
+- [ ] Where the remux files come from, and a copyright note
+- [ ] Microphone calibration file, mic position and playback level of the tests; projector fan state during the noise measurement
+- [ ] The licence of each dependency
+- [ ] Which scripts predate the 2026-10-20 to 24 working sessions

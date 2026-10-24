@@ -10,6 +10,8 @@
 - Docs: alignment verification, heights section, sub range and the Amaze buzz investigation, decisions D14-D17.
 
 ## 2026-10-24
+- README review (blind reviewer plus a reviewer with the project context): at-a-glance block, glossary, uncertainty paragraph, safety note, authorship moved up and made explicit about the AI-written analysers; claims reworded to "measured at one seat"; sub arrival, dialogue and reflection wording corrected.
+- Figures: 01 annotations on the true peaks, 10 right panel split, 11 says synthetic and defines its metric, 15 levels, 06 compression panel, 18 colour scale; `06_sub_and_room_modes.png` renamed `20_room_modes.png`.
 - `tools/make-recording-graphs.py`: redraws the recording-based figures (03, 06 range, 07, 08/08b, 12 to 19) from the raw recordings; `make-graphs.py` no longer draws 03, 07, 08.
 - `tools/subtest/analyze-subtest.py`: placement falls back to the loudest sweep when the sync chirps are faint or doubled.
 - `docs/status.md`: dialogue kit now measured in the room; sub arrival measured (about 7 ms after FL, not compensated); Amaze/hot-run findings revised.

@@ -109,9 +109,13 @@ ax.semilogx(GRID, yF, color=GREY, lw=1, ls=":", label="before: LFE input (same h
 after = yL + filt_db(GRID, SE.FILTER_SETS["drone2"])
 ax.semilogx(GRID, after, color=ORANGE, lw=2, label="after: predicted with the drone2 preset")
 ax.axhline(0, color="k", lw=0.5)
-hb, ha = band(GRID, yL, 50, 70), band(GRID, after, 50, 70)
-ax.annotate(f"hump {hb:+.0f} dB", (60, hb), (110, hb + 3), arrowprops=dict(arrowstyle="-", color=GREY), color="#555")
-ax.annotate(f"{ha:+.0f} dB (kept on purpose)", (60, ha), (110, ha - 3), arrowprops=dict(arrowstyle="-", color=ORANGE), color=ORANGE)
+pk = (GRID >= 40) & (GRID <= 100)
+ib, ia = np.argmax(np.where(pk, yL, -99)), np.argmax(np.where(pk, after, -99))
+ax.plot([GRID[ib]], [yL[ib]], "o", color=GREY, ms=5)
+ax.plot([GRID[ia]], [after[ia]], "o", color=ORANGE, ms=5)
+ax.annotate(f"peak {yL[ib]:+.0f} dB at {GRID[ib]:.0f} Hz", (GRID[ib], yL[ib]), (150, yL[ib] + 2), arrowprops=dict(arrowstyle="-", color=GREY), color="#555")
+ax.annotate(f"peak {after[ia]:+.0f} dB at {GRID[ia]:.0f} Hz (kept on purpose)", (GRID[ia], after[ia]), (150, after[ia] - 6), arrowprops=dict(arrowstyle="-", color=ORANGE), color=ORANGE)
+print("fig01 peaks: before %+.1f dB at %.0f Hz, after %+.1f dB at %.0f Hz" % (yL[ib], GRID[ib], after[ia], GRID[ia]))
 ax.set_xlim(25, 1000)
 ax.set_xticks([25, 40, 63, 100, 160, 250, 400, 630, 1000])
 ax.set_xticklabels(["25", "40", "63", "100", "160", "250", "400", "630", "1k"])
@@ -120,7 +124,7 @@ ax.set_ylabel("dB re the 300-400 Hz level, 1/6 octave")
 ax.set_title("The bass hump the Z906 and the room produce, and what drone2 does to it")
 ax.legend(loc="upper right", fontsize=8)
 save(fig, "01_bass_before_after", "Real REW sweeps (data/rew, 19 Oct 2026, mic calibration applied, no timing reference so read shapes). "
-     "'After' is computed: sweep plus the exact drone2 filters from scripts/set-eq.py. Single speaker, one seat.")
+     "'After' is computed, not measured: the sweep plus the exact drone2 filters from scripts/set-eq.py. Labels mark the highest point of each curve between 40 and 100 Hz. Single speaker, one seat.")
 
 # ---------------------------------------------------------------------------------------------------------------- 2
 fig, axs = plt.subplots(1, 2, figsize=(11, 4.2), gridspec_kw={"width_ratios": [1.5, 1]})
@@ -228,7 +232,7 @@ ax.set_ylim(-2.5, 6)
 ax.legend(fontsize=7.5, loc="upper right")
 save(fig, "04_alignment", "Delays and trims: scripts/set-eq.py ALIGN table. 'After' arrival and level: sweep run 1 (docs/alignment.md, docs/status.md). 'Before' arrival is "
      "reconstructed as measured arrival minus the delay applied (the REW sweeps carry no timing reference); the 2026-10-24 comparison quotes about 4.9 ms for all speakers. "
-     "Before-trim levels are the band-energy values of the chirp test; after-trim values for FC and the heights were not recorded.")
+     "Before-trim levels are the band-energy values of the chirp test; after-trim values for FC and the heights were not recorded. Quoted values: where they differ from the redrawn figures 12, 13 and 15, those are the better ones.")
 
 # ---------------------------------------------------------------------------------------------------------------- 5
 fig, axs = plt.subplots(1, 2, figsize=(11, 4))
@@ -258,7 +262,7 @@ ax.set_ylabel("rms deviation (dB)")
 ax.set_title("Heights vs the five bed speakers (REW baseline)")
 ax.legend(fontsize=7.5)
 save(fig, "05_heights", "Left: computed from HEIGHT_TONE in scripts/set-eq.py. Right: before/after values quoted in the 2026-10-23/24 comparison (REW baseline of 19 Oct against the final profile). "
-     "Same-session sweeps 1 and 2 gave a smaller tone gain (4.5/4.1 to 3.1/3.5 dB) and 40 dB to 2.6/2.7 dB for the bass: see docs/status.md. The heights alone are 11 dB down at 125 Hz and 27 dB down at 100 Hz.")
+     "Same-session sweeps 1 and 2 gave a smaller tone gain (4.5/4.1 to 3.1/3.5 dB) and, for the bass, 41 dB (heights alone, the analyser's per-bin rms; about 27 dB with 1/6-octave smoothing) to 2.6/2.7 dB: see docs/status.md. The heights alone are 11 dB down at 125 Hz and 27 dB down at 100 Hz.")
 
 # ---------------------------------------------------------------------------------------------------------------- 6
 fig, axs = plt.subplots(1, 2, figsize=(11, 4.2))
@@ -295,7 +299,7 @@ ax.minorticks_off()
 ax.set_xlabel("Hz")
 ax.set_ylabel("dB re 300-400 Hz")
 ax.set_title("Room modes at the seat (real LFE sweep, before any DSP)")
-save(fig, "06_sub_and_room_modes", "Left: values from the 2026-10-23 sub test report (sweeps at -30, -22, -14 dBFS; no compression; stepped-tone rattle hunt grew by at most 4 dB when 10 dB louder, "
+save(fig, "20_room_modes", "Left: values from the 2026-10-23 sub test report (sweeps at -30, -22, -14 dBFS; no compression above 35 Hz (up to about 2.5 dB at 25-30 Hz, fig 06); stepped-tone rattle hunt grew by at most 4 dB when 10 dB louder, "
      "so no rattle). Right: real REW LFE sweep of 19 Oct (before any DSP); the shaded bands and the 100 Hz peak are the frequencies stated in docs/tuning-log.md, taken from the later sweeps.")
 
 # ---------------------------------------------------------------------------------------------------------------- 7

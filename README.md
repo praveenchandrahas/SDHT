@@ -1,12 +1,16 @@
 # Software-defined home theatre (Linux, Atmos 5.1.2)
 
-A home theatre with no receiver and no processor: a Linux laptop decodes Dolby Atmos remuxes live, renders the
-objects to a 5.1.2 speaker layout, and drives a Logitech Z906 plus two ceiling height speakers through a 7.1 USB
-interface, while a 1080p projector shows the picture on a DIY 107 inch screen. This repository documents how it was
-built, how it runs, and how it was tuned.
+**At a glance.** A Linux laptop decodes Dolby Atmos files live and renders the objects to a 5.1.2 speaker layout; a Logitech Z906 plus
+two ceiling speakers play them, and a projector shows the picture on a DIY 107 inch screen. There is no AV receiver: CamillaDSP on the laptop does the
+EQ, delays and trims, and the amplifiers only amplify.
+**For:** people building a similar Linux Atmos setup, or checking how it was tuned. This is a build log with working scripts, not a packaged product.
+**Needs:** Kubuntu 24.04, PipeWire, Omniphony, harletty-bridge, a patched mpv, CamillaDSP and a 7.1 USB interface (details under [Quick start](#quick-start-on-a-new-machine);
+exact versions are still to be filled in, see [Still to fill in](#still-to-fill-in)).
+**Status:** everything below was measured at one seat, in one room, with one microphone. "Measured" here means that; see [How much is measured?](#how-much-is-measured) and
+[Uncertainty](#uncertainty) before relying on any number. The analysis code that produced the numbers was written with an AI assistant and has not been independently validated ([Authorship](#authorship-and-licence)).
 
-Room: about 10 x 10 ft, light-controlled and acoustically treated, no space behind the seat, so **5.1.2 is the
-largest sensible layout** (7.1.4 and 5.1.4 are deliberately not used).
+Room: about 10 x 10 ft, light-controlled and acoustically treated, with no space behind the seat for rear speakers, so **5.1.2 is the
+largest layout used here** (7.1.4 and 5.1.4 are deliberately not used).
 
 ## Credits
 
@@ -29,6 +33,13 @@ How the Omniphony stack was built and debugged on this machine is in [docs/omnip
 ![System overview, every component](docs/img/system-overview.png)
 
 *Every component, hardware and software. Dashed boxes are items still to confirm (see [todo-fill-in](docs/todo-fill-in.md)).*
+
+**Words used below.** *Remux*: a lossless copy of a disc's video and audio streams in a new file (where the files come from is under [Still to fill in](#still-to-fill-in)).
+*Bed* and *heights*: the five ear-level speakers and the two ceiling speakers. *LFE*: the sub channel. *VBAP*: the panning method Omniphony uses to place objects
+between speakers. *OSC*: the network control protocol Omniphony uses. *LR4*: a 24 dB per octave crossover filter. *`drone2`*, *`thump20x`*, *`tight20x`*:
+named bass EQ presets (`drone2` is the one in use). *Standing profile*: the settings applied at every start. *STI*, *C50*, *RT60*: speech-intelligibility, clarity
+and reverberation measures. *BS.1116*: the ITU-R listening-room recommendation whose early-reflection limit (-10 dB) is used here. *Hot sub run*: the sub test repeated
+at higher level. *Dolby Amaze*: Dolby's Atmos demo clip, in which Praveen hears a buzz. *Bar test*: a kit for comparing the rig with a soundbar.
 
 ## The build
 
@@ -84,7 +95,7 @@ Every problem met on the way, with cause and fix, is in [docs/omniphony-debuggin
 [`scripts/mpv-atmos`](scripts/mpv-atmos) is a reference copy of the wrapper: `--ad=orender` with the engine and bridge paths,
 VAAPI decode, `--vo=gpu-next` on Vulkan, `--target-peak=60 --tone-mapping=bt.2390`, a Mitchell downscaler with linear,
 corrected downscaling, and debanding. [`scripts/mpv-atmos-overlay-off.lua`](scripts/mpv-atmos-overlay-off.lua) switches the
-trajectory overlay off at file load. Paths are from the owner's machine; adjust them.
+trajectory overlay off at file load. Paths are from Praveen's machine; adjust them.
 
 ## Tuning and automation (the CamillaDSP stage)
 
@@ -98,7 +109,7 @@ the room gives one big bass hump near 60 Hz, so the stage is tuned from recordin
 | **Preset switcher** | Writes the CamillaDSP config for a named bass preset plus alignment, heights processing and upmix, validates it, restarts the service and relinks. With no arguments it loads the **standing profile** | `scripts/set-eq.py`, `scripts/make-default.sh` |
 | **Heights processing** | LR4 high-pass at 140 Hz on the heights, their bass summed into the LFE, fitted tone filters and a +1.0 dB trim (`--heights`, `--heights-tone`) | `scripts/set-eq.py` |
 | **Upmix** | Stereo to 5.1.2 (fixed matrix, or adaptive with `stereo-ad`) and 5.1 bed to 5.1.2 (`--upmix=stereo\|stereo-ad\|bed[:flavour]`), three flavours each | `scripts/upmix.py` |
-| **Adaptive ambience engine** | Streaming STFT process that separates direct sound from ambience and feeds only the ambience to the surrounds and heights; about 4 % of one core, 21 ms on the rear feeds only; started by the router, falls back to the fixed matrix if it does not come up | `scripts/upmix_engine.py` (`eq engine`) |
+| **Adaptive ambience engine** | Streaming STFT process that separates direct sound from ambience and feeds only the ambience to the surrounds and heights; about 4 % of one core and 21 ms on the rear feeds only, per [runbook.md](docs/runbook.md) (not re-measured on the live rig); started by the router, falls back to the fixed matrix if it does not come up | `scripts/upmix_engine.py` (`eq engine`) |
 | **Automatic profile** | Chrome playing selects the stereo upmix; for mpv the source is read over IPC (Atmos is film, 5.1 is bed, stereo is stereo upmix); idle is film | `scripts/theater-route` (`eq mode`, `eq source`) |
 | **Measurement kits** | Chirp delay test, sweep test, sub test, dialogue test, early-reflection analysis, bar test, upmix evaluation | `tools/` (see layout below) |
 | **Tests** | Router and config-generator tests (51 router checks) that need no audio hardware | `tests/run.sh` |
@@ -107,25 +118,25 @@ Current tuning is the **standing profile**, `./scripts/set-eq.py` with no argume
 --heights-tone`), installed by `scripts/make-default.sh` and applied by `eq ensure` whenever `mpv-atmos` starts:
 
 - **`drone2`** bass preset: cut-only, strong thump with the 63 to 92 Hz drone tamed ([tuning-log](docs/tuning-log.md)).
-- **`--align`**: per-speaker delays and trims so all eight speakers arrive together at the seat ([alignment](docs/alignment.md)).
-- **`--heights`, `--heights-tone`**: the heights cannot reproduce bass, so it goes to the sub, and their tone is fitted to the bed.
+- **`--align`**: per-speaker delays and trims so that the seven full-range speakers arrive within about 0.2 ms of each other at the seat in the first sweep run (the sub arrives 6 to 7 ms late and is not yet compensated; see A3 and [alignment](docs/alignment.md)).
+- **`--heights`, `--heights-tone`**: the heights cannot reproduce bass, so it goes to the sub, and their tone is moved towards the bed's (about 1 dB rms closer; see A4).
 
 ![Predicted effect of drone2 at the seat](docs/img/bass-response-drone2.png)
 
 ![Verification summary](docs/graphs/10_verification_summary.png)
 
-*Values as recorded in [status.md](docs/status.md) and [alignment.md](docs/alignment.md), from the 2026-10-23 sweep runs. The
-raw recordings are not in the repository. The heights "before" figure is approximate (about 40 dB).*
+*Values as recorded in [status.md](docs/status.md) and [alignment.md](docs/alignment.md), from the 2026-10-23 sweep runs; the raw recordings are not in the repository.
+The heights' bass "before" figure is the heights alone with no sub feed (41 dB rms per analysis bin, about 27 dB with 1/6-octave smoothing).*
 
-The upmix presets are measured offline only so far. The adaptive ambience engine (`scripts/upmix_engine.py`, used by the stereo upmix by default, with an automatic fall-back to the fixed matrix; not yet run against real PipeWire) separates
-instrument from ambience far better than the fixed side-signal matrix on spectrally sparse sources, and no better on noise
-([tools/upmixtest](tools/upmixtest/README.md)):
+The upmix presets are measured offline only so far, on synthetic test signals. The adaptive ambience engine (`scripts/upmix_engine.py`, used by the stereo upmix by default, with an automatic fall-back to the fixed matrix; not yet run against real PipeWire) separates
+instrument from ambience far better than the fixed side-signal matrix on synthetic harmonic notes, and no better on noise
+([tools/upmixtest](tools/upmixtest/README.md)). The metric is the ambience kept in the surrounds minus the instrument leaking into them, in dB. It says nothing yet about music:
 
 ![Adaptive ambience vs fixed matrix](docs/graphs/11_upmix_adaptive_vs_fixed.png)
 
 ### Daily use
 
-You do nothing. Start mpv (or `mpv-atmos`); within half a second its channels are linked through CamillaDSP.
+The intended behaviour is that you do nothing: start mpv (or `mpv-atmos`) and within half a second its channels are linked through CamillaDSP. This is tested in simulation and after a reboot away from the rig, not yet on the rig itself (see the table below).
 
 ```bash
 eq status    # what is routed where right now, which preset is loaded
@@ -134,23 +145,32 @@ eq on        # back to the tuned sound
 eq toggle    # flip, handy on a keyboard shortcut
 ```
 
-More in [docs/runbook.md](docs/runbook.md).
+More in [docs/runbook.md](docs/runbook.md); when something misbehaves, [docs/troubleshooting.md](docs/troubleshooting.md).
 
-## How much is verified?
+## How much is measured?
 
-Claim by claim in [docs/status.md](docs/status.md) (updated 2026-10-24). In short:
+Claim by claim in [docs/status.md](docs/status.md) (updated 2026-10-24). "Measured" means measured at one seat with one microphone. In short:
 
-| Verified (measured and confirmed) | Measured, not confirmed afterwards | Not yet tested on the real system |
+| Measured, and confirmed by listening or a second run | Measured once, not confirmed afterwards | Not yet tested on the real system |
 |---|---|---|
-| Bass voicing (`drone2`), by recordings and listening | Level trims, within about 2 dB (mic-position limit) | Auto-routing and the `eq` switch (simulated only) |
-| Speaker delays, all eight within 0.2 ms of FL (sweep run 1) | Heights bass management and tone-match (within 2.6/2.7 dB rms of the bed over 40-400 Hz; height trim lowered to +1.0 dB, not re-measured) | Routing to the rig after a reboot (needs the USB interface connected) |
-| Live Atmos object rendering through the whole chain | Sub range: clean to about 40 Hz, usable 36 Hz, nothing usable under 22 Hz | Automatic profile switching (Chrome, 5.1, stereo) |
-| Services and standing profile start at boot (2026-10-24, away from the rig) | Early reflections: FC and FR meet ITU-R BS.1116, FL and both heights have one reflection each; panel effect untested | Upmix presets by ear (measured offline only) |
-| Lip-sync and dialogue: owner listening, not measured | Polarity: all speakers in phase | Dialogue kit in the room |
+| Bass voicing (`drone2`), by recordings and listening | Level trims: within about 2 dB in each run, but the same speaker moves by up to about 2.5 dB between runs (mic position) | Auto-routing and the `eq` switch (simulated only) |
+| Speaker delays: the seven full-range speakers within 0.2 ms of FL in sweep run 1 (up to 0.6 ms in run 2, mic moved). **The sub arrives 6 to 7 ms after FL and is not compensated** | Heights bass management: heights + sub within 2.6/2.7 dB rms of the bed over 40-400 Hz (the heights alone: 41 dB). Heights tone: 3.1/3.5 dB rms from the bed against 4.5/4.1, about 1 dB closer, inside the run-to-run noise. Trim lowered to +1.0 dB, not re-measured | Routing to the rig after a reboot (needs the USB interface connected) |
+| Live Atmos object rendering through the whole chain | Sub range: harmonics below 3 % down to about 40 Hz, usable to 36 Hz, nothing usable under 22 Hz | Automatic profile switching (Chrome, 5.1, stereo) |
+| Services and standing profile start at boot (2026-10-24, away from the rig) | Early reflections: FC and FR meet the ITU-R BS.1116 limit; FL and both heights exceed it by one reflection each; panel effect untested | Upmix presets by ear (measured offline only) |
+| Lip-sync: Praveen's listening, not measured | Dialogue kit (2026-10-24): STIPA-style STI 0.79 to 0.83, dialogue 13 to 18 dB above the noise; centre has +5.7 dB boom and -3.3 dB presence | |
+| | Polarity: all speakers in phase | |
 
-**Open:** a rattle or buzz in loud bass scenes. The owner hears it as sub-cabinet rattle; steady tones at -14 dBFS do not
-reproduce it and the recording cannot separate cabinet rattle from the room's +5 dB peak at 100 Hz. Next step is the same kit at
--8 and -3 dBFS ([tools/subtest](tools/subtest/README.md)).
+**Open:** a rattle or buzz in loud bass scenes. Praveen hears it as sub-cabinet rattle; steady tones at -14 dBFS do not
+reproduce it, and the Dolby Amaze recording shows no fixed 100 Hz line that would separate cabinet rattle from a room mode. In the hot sub run the recording peaks at the same level on eight tones, which points at a limit in the
+chain that has not been located. Next step is the same kit at a lower level and a different mic position, and at -8 and -3 dBFS ([tools/subtest](tools/subtest/README.md)).
+
+## Uncertainty
+
+One room, one seat, one microphone (a Dayton iMM-6S on its own USB clock), no absolute level calibration. The microphone was not in exactly the same spot between the two sweep runs, so
+single frequency bins moved by 3 to 7 dB and one speaker's level by about 2.5 dB; read band averages, not single points. Differences under about 2 dB per band or 0.03 STI are within
+repeatability. The capture chain caps at about -6 dBFS in the hot sub run, and its floor above 4 kHz may set the noise values. STI is a STIPA-style estimate without auditory masking, not a certified measurement. The
+"after" bass curve in A1 is computed, not recorded. The analysis code (sweep, sub, dialogue, reflection and rattle analysers) was written with an AI assistant and has not been independently validated; where a number matters, check it against
+the raw REW exports in `data/rew/`.
 
 ## Repository layout
 
@@ -168,7 +188,7 @@ docs/        the documentation (start with architecture.md and runbook.md); docs
 
 ## Quick start on a new machine
 
-See [docs/installation.md](docs/installation.md). One command does the rest once everything is installed (applies the standing profile, installs the router and the `eq` command, enables the services):
+Prerequisites, built first and not covered by the command below: the patched mpv-omniphony, Omniphony, harletty-bridge, PipeWire, CamillaDSP and the 7.1 USB interface (see [docs/installation.md](docs/installation.md) and [docs/omniphony-debugging.md](docs/omniphony-debugging.md)). Then one command does the rest (applies the standing profile, installs the router and the `eq` command, enables the services):
 
 ```bash
 ./scripts/make-default.sh                        # write + load the standing profile
@@ -176,30 +196,40 @@ See [docs/installation.md](docs/installation.md). One command does the rest once
 
 ## Still to fill in
 
-The build steps are recorded in [docs/omniphony-debugging.md](docs/omniphony-debugging.md) and the wrapper is in `scripts/`.
-What remains marked `TODO(owner)` in the docs (listed in [docs/todo-fill-in.md](docs/todo-fill-in.md)) is mostly the
-current `mpv.conf`, the media-library mount and the laptop-to-projector HDMI path. The checks still to do at the rig are in
-[docs/status.md](docs/status.md#checks-still-to-do).
+Not yet recorded, so not stated here (the checklist is [docs/todo-fill-in.md](docs/todo-fill-in.md); `TODO(owner)` marks the spots in the docs):
+
+- TODO: exact versions of Omniphony, harletty-bridge, CamillaDSP and PipeWire (only mpv 0.41.0 is recorded), and the current `mpv.conf`.
+- TODO: bill of materials with sources and prices, the media-library mount and the laptop-to-projector HDMI path.
+- TODO: CPU and latency of the live decode and render chain (the 4 % and 21 ms figures are for the upmix engine only).
+- TODO: whether DTS:X works on this rig (harletty-bridge advertises DTS and DTS:X input; it has not been tested here).
+- TODO: where the remux files come from, and a note on copyright.
+- TODO: microphone calibration file, mic position and playback level of the tests; projector fan state during the noise measurement.
+- TODO: the licence of each dependency (not checked), and which scripts predate the October working sessions.
+
+The checks still to do at the rig are in [docs/status.md](docs/status.md#checks-still-to-do).
+
+**Safety.** The sweeps and tone tests play loud, sustained low frequencies: start low, keep the sub away from your ears, and note that high-level tones can damage drivers. The height amplifier and speaker wiring are mains-powered and
+should only be rebuilt by someone who knows what they are doing.
 
 ## Authorship and licence
 
-The tuning decisions, measurements, listening tests and the build itself are the owner's. The scripts, analysis code
-and first drafts of these documents were written with Claude (Anthropic) during working sessions on
-2026-10-20 to 2026-10-24. Licensed under the [Apache License 2.0](LICENSE). The projects credited above have their own licences.
+The tuning decisions, measurements, listening tests and the build itself are Praveen's. The scripts, the analysis code and first drafts of these documents were written with Claude (Anthropic) in working sessions, mainly 2026-10-20 to 2026-10-24
+(TODO: which scripts, if any, predate that). This includes the code that produces the numbers: the sweep, sub, dialogue (STI) and reflection analysers and the rattle detector. It has been checked against simulated rooms and against the REW exports,
+not independently validated. Licensed under the [Apache License 2.0](LICENSE). The projects credited above have their own licences, which are not summarised here.
 
 ## Appendix: the main graphs
 
-All the graphs are in [docs/graphs/](docs/graphs/) (index and sources in its [README](docs/graphs/README.md)); these are the nine
+All twenty-one graphs are in [docs/graphs/](docs/graphs/) (index and sources in its [README](docs/graphs/README.md)); these are the nine
 that matter most. Every figure says in its caption which parts are real REW data, which are computed from the filter definitions
-in `scripts/set-eq.py`, and which are values quoted from the measurement reports. Figures 03, 06 (range), 07, 08 and 12 to 19 are drawn from the raw recordings by
+in `scripts/set-eq.py`, and which are values quoted from the measurement reports. Figures 03, 06, 07, 08, 08b and 12 to 19 are drawn from the raw recordings by
 `tools/make-recording-graphs.py` (the recordings themselves are not in the repository).
 
 ### A1. The bass problem and the drone2 fix
 
 ![Bass before and after](docs/graphs/01_bass_before_after.png)
 
-The Z906 sends every channel's bass to its sub, and the room adds a strong mode at 56 to 63 Hz, so the seat sees a hump of about
-30 dB over the mids. `drone2` flattens the drone region and keeps the thump on purpose.
+The Z906 sends every channel's bass to its sub, and the room adds a strong mode at 56 to 63 Hz, so the seat sees a peak about 35 dB over the 300 to 400 Hz level at 63 Hz (about 31 dB averaged over 50 to 70 Hz, as quoted in fig 09). `drone2` takes about 6 dB off the peak and about 13 dB off the 63 to 92 Hz drone region, and keeps
+the thump on purpose. The "after" curve is the sweep plus the exact filters, computed, not recorded.
 
 ### A2. Prediction against recording
 
@@ -212,8 +242,8 @@ mismatch (the 40 Hz band is 3 dB deeper than predicted); neither recording clips
 
 ![Timing and level](docs/graphs/15_timing_and_level.png)
 
-Redrawn from the recordings. The eight speakers arrive within 0.26 ms (run 1) and 0.62 ms (run 2) of each other, against 4.7 ms before the delays; levels sit within about 2 dB.
-The "before" arrivals are the measured ones minus the applied delay. **The sub (LFE) arrives about 7 ms after the front left** (group delay near 15 ms at 50 to 100 Hz), yet its delay is
+Redrawn from the recordings. The seven full-range speakers arrive within 0.26 ms (run 1) and 0.62 ms (run 2) of each other, against about 4.7 to 4.9 ms before the delays (two reconstructions of the same quantity); levels sit within about 2 dB in each run, and the same speaker
+moves by up to about 2.5 dB between runs. The "before" arrivals are the measured ones minus the applied delay. **The sub (LFE) arrives 6 to 7 ms after the front left** (group delay near 15 ms at 50 to 100 Hz), yet its delay is
 still kept equal to FL's; see [status](docs/status.md).
 
 ### A4. Heights: tone-match and bass management
@@ -223,7 +253,8 @@ still kept equal to FL's; see [status](docs/status.md).
 ![Heights bass](docs/graphs/13_heights_bass.png)
 
 The ceiling speakers have no output below about 125 Hz, so their bass is sent to the sub, and three fitted filters pull their tone towards the bed
-(from 4.7 / 4.2 to 3.0 / 3.4 dB rms against the bed, 170 Hz to 12.5 kHz). The mic moved a little between the two runs, so this is a modest, real improvement, not a precise one.
+(from 4.5 / 4.1 to 3.1 / 3.5 dB rms against the bed, 170 Hz to 12.5 kHz in the sweep analyser's report; the figure's own 1/6-octave smoothing gives 4.7 / 4.2 to 3.0 / 3.4). The mic moved a little between the two runs and single bins move 3 to 7 dB, so this is a
+modest improvement of about 1 dB, inside the run-to-run noise, not a precise match. The bass curves line up with the bed by construction, since the sub plays the heights' bass; that shows the bass management works as designed, not that the bass is right.
 
 ### A5. The sub and the room modes
 
@@ -231,23 +262,23 @@ The ceiling speakers have no output below about 125 Hz, so their bass is sent to
 
 ![Hot sub run](docs/graphs/17_hot_sub_run.png)
 
-Clean to about 40 Hz, usable to 36 Hz, audible but heavily distorted below about 30 Hz, nothing usable under 22 Hz. The stepped-tone rattle hunt flags nothing (`16_rattle_hunt.png`);
+"Clean" means harmonics below -30 dB (3 %), the analyser's own scale: about 2 % at 40 Hz at -14 dBFS, 5 % at 36 Hz (usable), 14 to 16 % at 25 to 31 Hz, nothing usable under 22 Hz. Compression is about 2 to 3 dB at 22 to 25 Hz and none above 35 Hz. The stepped-tone rattle hunt flags nothing (`16_rattle_hunt.png`);
 the loud-scene buzz is still open ([status](docs/status.md)). In the hot run the recording peaks at the same level on eight tones from 31.5 to 71 Hz, which points at a limit in the chain
-rather than a rattle; the recording cannot say where.
+rather than a rattle; the recording cannot say where, and it means the distortion figures rest on a capture chain that is only shown to be clean up to the -14 dBFS test level.
 
 ### A6. Dialogue
 
 ![Dialogue](docs/graphs/07_dialogue.png)
 
-Real recording of the dialogue kit in the room (dlg1.wav). STI is 0.79 to 0.83 ("excellent"), the dialogue sits 13 to 18 dB above the room noise in every octave band, and the
-phantom centre (FL + FR) scores 0.81 against 0.79 for the real centre.
+Real recording of the dialogue kit in the room (dlg1.wav). The STIPA-style estimate is 0.79 with the measured noise (0.83 for the room alone), which is in the "excellent" band of the STI scale (above 0.75). Dialogue sits 13 to 18 dB above the room noise
+in every octave band (uncalibrated levels). The phantom centre (FL + FR) scores 0.81 against 0.79 for the real centre, which is the same within repeatability (0.03). The centre speaker is not flat: +5.7 dB at 100 to 200 Hz and -3.3 dB at 2 to 4 kHz against 500 to 1000 Hz.
 
 ### A7. Early reflections
 
 ![Early reflections](docs/graphs/08_early_reflections.png)
 
-Measured on sweep run 2: centre (-14.1 dB) and front right (-13.8 dB) meet the ITU-R BS.1116 limit of -10 dB; the front left fails with one reflection at 5.1 ms (-8.4 dB),
-and both heights have one almost as strong as the direct sound (-1.3 and -0.6 dB at 3.6 and 3.8 ms). There is no panels-off baseline yet, so this shows where the energy is, not what the panels do.
+Measured on sweep run 2: centre (-14.1 dB) and front right (-13.8 dB) meet the ITU-R BS.1116 limit of -10 dB; the front left exceeds it with one reflection at 5.1 ms (-8.4 dB, which is within the repeatability of the method),
+and both heights have one almost as strong as the direct sound (-1.3 and -0.6 dB at 3.6 and 3.8 ms). The BS.1116 limit is written for ear-level listening rooms; applying it to ceiling speakers is a stretch, so read the heights as "strong early reflection", not "fail". There is no panels-off baseline yet, so this shows where the energy is, not what the panels do.
 The summary bar chart is `08b_early_reflections_summary.png`.
 
 ### Also in the folder
@@ -259,9 +290,11 @@ The summary bar chart is `08b_early_reflections_summary.png`.
 | `10_verification_summary.png` | Delays, levels and heights results of the 23 Oct sweep runs |
 | `11_upmix_adaptive_vs_fixed.png` | Adaptive ambience prototype against the fixed matrix (offline only) |
 
+| `08b_early_reflections_summary.png` | Strongest early reflection per speaker |
 | `14_tone_each_speaker.png` | Tone of each of the seven speakers against the bed |
 | `16_rattle_hunt.png` | Stepped-tone rattle hunt |
 | `18_amaze_buzz.png` | Dolby Amaze clip spectra |
 | `19_presets_recorded_vs_predicted.png` | `thump20x` and `tight20x`, recorded against predicted |
+| `20_room_modes.png` | Room modes in the LFE sweep, with the sub-range values quoted from the report |
 
 Regenerate with `python3 tools/make-graphs.py`, `python3 tools/make-verification-figures.py` and, with the recordings, `python3 tools/make-recording-graphs.py --help` (numpy, scipy and matplotlib).

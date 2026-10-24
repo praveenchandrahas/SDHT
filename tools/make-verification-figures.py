@@ -21,7 +21,7 @@ ax[0].bar(spk, arr, color=C1)
 ax[0].axhline(0, color="k", lw=0.6)
 ax[0].set_ylim(-0.5, 0.5)
 ax[0].set_ylabel("arrival vs FL (ms)")
-ax[0].set_title("Delays, verified\n(all within 0.2 ms, shaded)", fontsize=9)
+ax[0].set_title("Delays, measured (run 1, six speakers vs FL)\n(within 0.2 ms, shaded; sub not shown)", fontsize=9)
 
 # 2. level vs FL at 500 Hz-2 kHz, sweep run 1, docs/status.md
 spk2 = ["FR", "SL", "SR"]
@@ -33,28 +33,28 @@ ax[1].set_ylim(-4, 4)
 ax[1].set_ylabel("level vs FL (dB)")
 ax[1].set_title("Level trims, measured\n(about +-2 dB, mic-position limit)", fontsize=9)
 
-# 3. heights vs bed, sweep run 2 (docs/status.md): rms deviation 40-400 Hz (bass), tone deviation
-labels = ["heights + sub\nvs bed, 40-400 Hz", "tone deviation\nvs bed"]
-before = [40, 4.3]      # docs: "~40 dB" (approximate); tone 4.5 / 4.1 -> mean 4.3
-after = [2.65, 3.3]     # docs: 2.6 / 2.7; tone 3.1 / 3.5 -> mean 3.3
-x = range(2)
-w = 0.36
-ax[2].bar([i - w / 2 for i in x], before, w, label="before", color=GREY)
-ax[2].bar([i + w / 2 for i in x], after, w, label="after", color=C2)
-ax[2].set_xticks(list(x))
-ax[2].set_xticklabels(labels)
-ax[2].set_ylabel("rms deviation (dB)")
-for i in x:
-    ax[2].text(i - w / 2, before[i] + 0.8, f"{before[i]:g}", ha="center", fontsize=8)
-    ax[2].text(i + w / 2, after[i] + 0.8, f"{after[i]:.1f}", ha="center", fontsize=8)
-ax[2].set_title("Heights bass management and tone-match\n(mean of RL and RR)", fontsize=9)
-ax[2].legend(frameon=False)
-fig.suptitle("Verification summary, 2026-10-23 sweep runs (documented values, see docs/status.md)", fontsize=10)
-fig.tight_layout()
+# 3. heights vs bed (docs/status.md): two separate quantities, each on its own axis
+pos = ax[2].get_position()
+ax[2].remove()
+inner = fig.add_gridspec(1, 2, left=0.70, right=0.985, bottom=pos.y0, top=pos.y1, wspace=0.6)
+b1, b2 = fig.add_subplot(inner[0]), fig.add_subplot(inner[1])
+for a_, bef, aft, ttl in ((b1, 41.1, 2.65, "heights + sub vs bed,\n40-400 Hz (rms dB)"), (b2, 4.3, 3.3, "heights tone vs bed,\n170 Hz-12.5 kHz (rms dB)")):
+    a_.bar([0, 1], [bef, aft], color=[GREY, C2], width=0.6)
+    a_.set_xticks([0, 1])
+    a_.set_xticklabels(["before", "after"])
+    for i, v in enumerate((bef, aft)):
+        a_.text(i, v + 0.02 * max(bef, aft), f"{v:.1f}" if v < 10 else f"{v:.0f}", ha="center", fontsize=8)
+    a_.set_title(ttl, fontsize=8)
+    a_.set_ylim(0, max(bef, aft) * 1.15)
+b1.set_ylabel("rms deviation (dB)")
+fig.suptitle("Measured at one seat, 2026-10-23 sweep runs (values from docs/status.md)", fontsize=10, x=0.01, ha="left")
+fig.subplots_adjust(left=0.06, right=0.985, bottom=0.27, top=0.76, wspace=0.3)
+fig.text(0.01, 0.01, "Left two panels: sweep run 1. Right (mean of RL and RR): run 1 (before) and run 2 (after); the mic moved between the runs.\nThe before bass is the heights alone, no sub feed, per analysis bin; with 1/6-octave smoothing it is about 27 dB (fig 13).", fontsize=7, color="#666")
 fig.savefig(os.path.join(OUT, "10_verification_summary.png"), dpi=160)
 
 # 4. upmix: fixed side-signal matrix vs adaptive ambience, tools/upmixtest/README.md
-fig, ax = plt.subplots(figsize=(6.4, 3.4))
+w = 0.36
+fig, ax = plt.subplots(figsize=(6.4, 3.9))
 stim = ["harmonic notes,\nhard left", "harmonic notes,\n70% left", "dense noise,\nhard left"]
 fixed = [3.6, 8.5, 3.6]
 adapt = [21, 22, 4.0]
@@ -64,8 +64,9 @@ ax.bar([i + w / 2 for i in x], adapt, w, label="adaptive", color=C2)
 ax.set_xticks(list(x))
 ax.set_xticklabels(stim)
 ax.set_ylabel("ambience minus instrument leak (dB)")
-ax.set_title("Adaptive ambience prototype (offline, not in the signal path)", fontsize=9)
+ax.set_title("Adaptive ambience prototype (offline, synthetic test signals)", fontsize=9)
 ax.legend(frameon=False)
-fig.tight_layout()
+fig.tight_layout(rect=(0, 0.14, 1, 1))
+fig.text(0.01, 0.01, "Synthetic signals only: an instrument (harmonic notes or noise) panned into a stereo mix with reverb,\nso the leak and the retained ambience are known exactly. Metric: ambience kept in the surrounds\nminus instrument leaking into them, dB (tools/upmixtest). Not music.", fontsize=6.5, color="#666")
 fig.savefig(os.path.join(OUT, "11_upmix_adaptive_vs_fixed.png"), dpi=160)
 print("ok")
