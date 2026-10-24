@@ -1,7 +1,7 @@
 # Installation
 
 This repository covers the audio routing, DSP and measurement parts. The player stack (Omniphony, harletty-bridge,
-mpv-omniphony) and the media library were set up before this repository existed; their steps are TODO(owner) in
+mpv-omniphony) and the media library were set up before this repository existed; their steps are TODO(owner); run `scripts/collect-versions.sh` on the laptop to gather their versions, install paths and `mpv.conf` in
 section 2. Everything else below has been used on the real system, except the auto-router, which has only been
 tested in simulation (see [status.md](status.md)).
 

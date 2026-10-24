@@ -2,7 +2,7 @@
 
 Search the docs for `TODO(owner)`. Checklist:
 
-- [ ] Laptop model, OS and kernel version; PipeWire and WirePlumber versions (`pipewire --version`)
+- [ ] Laptop model, OS and kernel version; PipeWire and WirePlumber versions (`pipewire --version`) — **run `./scripts/collect-versions.sh --redact` on the laptop and paste the report; it also gathers the next five items**
 - [ ] `systemctl --user cat camilladsp.service` (replace `configs/systemd/camilladsp.service.example`)
 - [ ] The exact `mpv-atmos` command or alias, and `mpv.conf` (video side included)
 - [ ] Omniphony install and configuration steps, with upstream links and versions (liborender 0.3.0, ABI 0.6, commit 6ffaf21)
@@ -16,6 +16,7 @@ Search the docs for `TODO(owner)`. Checklist:
 - [ ] CPU and latency of the live decode and render chain (the 4 % / 21 ms figures are for the upmix engine only)
 - [ ] Whether DTS:X works on this rig
 - [ ] Where the remux files come from, and a copyright note
-- [ ] Microphone calibration file, mic position and playback level of the tests; projector fan state during the noise measurement
+- [x] Microphone calibration file: provided, in `data/mic/` (belongs to one Dayton iMM-6S; not applied by the recording analysers, see data/README.md)
+- [ ] Mic position and playback level of the tests; projector fan state during the noise measurement
 - [ ] The licence of each dependency
 - [ ] Which scripts predate the 2026-10-20 to 24 working sessions
