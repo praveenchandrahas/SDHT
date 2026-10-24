@@ -34,7 +34,7 @@ How the Omniphony stack was built and debugged on this machine is in [docs/omnip
 
 *Every component, hardware and software. Dashed boxes are items still to confirm (see [todo-fill-in](docs/todo-fill-in.md)).*
 
-**Words used below.** *Remux*: a lossless copy of a disc's video and audio streams in a new file (where the files come from is under [Still to fill in](#still-to-fill-in)).
+**Words used below.** *Remux*: a lossless copy of a disc's video and audio streams in a new file.
 *Bed* and *heights*: the five ear-level speakers and the two ceiling speakers. *LFE*: the sub channel. *VBAP*: the panning method Omniphony uses to place objects
 between speakers. *OSC*: the network control protocol Omniphony uses. *LR4*: a 24 dB per octave crossover filter. *`drone2`*, *`thump20x`*, *`tight20x`*:
 named bass EQ presets (`drone2` is the one in use). *Standing profile*: the settings applied at every start. *STI*, *C50*, *RT60*: speech-intelligibility, clarity
