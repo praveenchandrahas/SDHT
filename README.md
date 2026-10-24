@@ -8,6 +8,24 @@ built, how it runs, and how it was tuned.
 Room: about 10 x 10 ft, light-controlled and acoustically treated, no space behind the seat, so **5.1.2 is the
 largest sensible layout** (7.1.4 and 5.1.4 are deliberately not used).
 
+## Credits
+
+This project is mostly glue and measurement. The hard part, decoding and rendering Atmos objects live on Linux, is the
+work of others, and everything here stands on it:
+
+- **[Omniphony](https://github.com/mgth/Omniphony)** by mgth: the object renderer (VBAP to any speaker layout), Omniphony
+  Studio and the OSC control layer. **[mpv-omniphony](https://github.com/mgth/mpv-omniphony)** is the mpv integration
+  used here. Thank you for building it and for merging the packaging fix so quickly.
+- **[harletty-bridge](https://github.com/harletty/harletty-bridge)** by harletty: the decoder plugin (TrueHD and E-AC-3
+  Atmos objects; its repository also carries DTS and DTS:X input support) that feeds Omniphony its objects.
+- **[truehdd](https://github.com/truehdd/truehdd)** by Rainbaby, the open-source TrueHD Atmos decoder that the `harletty` decoder
+  (inside harletty-bridge) is a fork of, per harletty's README. Without that work, none of this would be possible.
+- Also used: [mpv](https://mpv.io), [libplacebo](https://code.videolan.org/videolan/libplacebo), [PipeWire](https://pipewire.org),
+  [CamillaDSP](https://github.com/HEnquist/camilladsp), [Room EQ Wizard](https://www.roomeqwizard.com), and
+  [Cavern](https://github.com/VoidXH/Cavern) (used for offline rendering before the live path existed).
+
+How the Omniphony stack was built and debugged on this machine is in [docs/omniphony-debugging.md](docs/omniphony-debugging.md).
+
 ![System overview, every component](docs/img/system-overview.png)
 
 *Every component, hardware and software. Dashed boxes are items still to confirm (see [todo-fill-in](docs/todo-fill-in.md)).*
@@ -39,7 +57,7 @@ The path of a film, from file to ears:
 | Audio interface | Vantec 7.1 USB (C-Media class), analog 7.1 mode, 8 outputs |
 | Bed speakers | Logitech Z906: front L/R, centre, two surrounds, sub |
 | Height speakers | Two Samsung SWA-8500S speakers (the wireless surrounds of a Samsung HW-T670 soundbar system, now wired), on the ceiling, Salcon Class-D 2 x 50 W amplifier, no sub |
-| Projector and screen | BenQ W1070; 107 inch 16:9 screen from sanded, sprayed gypsum board with a matte black border |
+| Projector and screen | BenQ W1070; 107 inch 16:9 screen from sanded, sprayed gypsum board with a matte black painted border, later extended with a 4 inch black velvet border |
 | Measurement | Dayton iMM-6S microphone on a separate USB adapter, Room EQ Wizard |
 | On hold | Custom subwoofer (JBL A1500HI, 75 L vented): not in the signal chain |
 
@@ -161,24 +179,6 @@ The build steps are recorded in [docs/omniphony-debugging.md](docs/omniphony-deb
 What remains marked `TODO(owner)` in the docs (listed in [docs/todo-fill-in.md](docs/todo-fill-in.md)) is mostly the
 current `mpv.conf`, the media-library mount and the laptop-to-projector HDMI path. The checks still to do at the rig are in
 [docs/status.md](docs/status.md#checks-still-to-do).
-
-## Credits
-
-This project is mostly glue and measurement. The hard part, decoding and rendering Atmos objects live on Linux, is the
-work of others, and everything here stands on it:
-
-- **[Omniphony](https://github.com/mgth/Omniphony)** by mgth: the object renderer (VBAP to any speaker layout), Omniphony
-  Studio and the OSC control layer. **[mpv-omniphony](https://github.com/mgth/mpv-omniphony)** is the mpv integration
-  used here. Thank you for building it and for merging the packaging fix so quickly.
-- **[harletty-bridge](https://github.com/harletty/harletty-bridge)** by harletty: the decoder plugin (TrueHD and E-AC-3
-  Atmos objects; its repository also carries DTS and DTS:X input support) that feeds Omniphony its objects.
-- **[truehdd](https://github.com/truehdd/truehdd)** by Rainbaby, the open-source TrueHD Atmos decoder that the `harletty` decoder
-  (inside harletty-bridge) is a fork of, per harletty's README. Without that work, none of this would be possible.
-- Also used: [mpv](https://mpv.io), [libplacebo](https://code.videolan.org/videolan/libplacebo), [PipeWire](https://pipewire.org),
-  [CamillaDSP](https://github.com/HEnquist/camilladsp), [Room EQ Wizard](https://www.roomeqwizard.com), and
-  [Cavern](https://github.com/VoidXH/Cavern) (used for offline rendering before the live path existed).
-
-How the Omniphony stack was built and debugged on this machine is in [docs/omniphony-debugging.md](docs/omniphony-debugging.md).
 
 ## Authorship and licence
 
