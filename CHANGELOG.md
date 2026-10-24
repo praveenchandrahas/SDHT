@@ -10,6 +10,9 @@
 - Docs: alignment verification, heights section, sub range and the Amaze buzz investigation, decisions D14-D17.
 
 ## 2026-10-24
+- `tools/make-recording-graphs.py`: redraws the recording-based figures (03, 06 range, 07, 08/08b, 12 to 19) from the raw recordings; `make-graphs.py` no longer draws 03, 07, 08.
+- `tools/subtest/analyze-subtest.py`: placement falls back to the loudest sweep when the sync chirps are faint or doubled.
+- `docs/status.md`: dialogue kit now measured in the room; sub arrival measured (about 7 ms after FL, not compensated); Amaze/hot-run findings revised.
 - `tools/make-graphs.py` and `docs/graphs/` (eleven graphs, index in its README); README appendix with the seven main ones. Curves that need the raw recordings are not redrawn (the recordings are not in the repo).
 - README brought up to date (verification table, standing profile, heights, upmix, automatic profile, tool layout); `tools/make-verification-figures.py` and `docs/graphs/10_verification_summary.png`, `docs/graphs/11_upmix_adaptive_vs_fixed.png` drawn from the values recorded in status.md and the upmixtest README (raw sweep recordings are not in the repo).
 - Reboot test on the real system: services and standing profile up at boot, run away from the rig (no Vantec), so routing is still to be checked at the rig (docs/status.md).

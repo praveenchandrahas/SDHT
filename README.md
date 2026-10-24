@@ -189,9 +189,10 @@ and first drafts of these documents were written with Claude (Anthropic) during 
 
 ## Appendix: the main graphs
 
-All eleven graphs are in [docs/graphs/](docs/graphs/) (index and sources in its [README](docs/graphs/README.md)); these are the seven
+All the graphs are in [docs/graphs/](docs/graphs/) (index and sources in its [README](docs/graphs/README.md)); these are the nine
 that matter most. Every figure says in its caption which parts are real REW data, which are computed from the filter definitions
-in `scripts/set-eq.py`, and which are values quoted from the measurement reports (the raw sweep recordings are not in this repository).
+in `scripts/set-eq.py`, and which are values quoted from the measurement reports. Figures 03, 06 (range), 07, 08 and 12 to 19 are drawn from the raw recordings by
+`tools/make-recording-graphs.py` (the recordings themselves are not in the repository).
 
 ### A1. The bass problem and the drone2 fix
 
@@ -204,42 +205,50 @@ The Z906 sends every channel's bass to its sub, and the room adds a strong mode 
 
 ![drone2 predicted vs recorded](docs/graphs/03_drone2_predicted_vs_recorded.png)
 
-The computed filter curve against the band changes recorded on the quiet Tenet scene (neither recording clipped): within about 1 to 2 dB.
+Tenet "freeport", direct against `drone2`, aligned on the part of the signal the EQ does not touch. The recorded band changes follow the filter curve with 1.4 dB rms
+mismatch (the 40 Hz band is 3 dB deeper than predicted); neither recording clips.
 
 ### A3. Alignment: delays and trims
 
-![Alignment](docs/graphs/04_alignment.png)
+![Timing and level](docs/graphs/15_timing_and_level.png)
 
-All eight speakers arrive within 0.2 ms of the front left (sweep run 1). Levels sit within about 2 dB, which is the limit of mic-position repeatability.
-The "before" arrivals are reconstructed from the delay table, not measured.
+Redrawn from the recordings. The eight speakers arrive within 0.26 ms (run 1) and 0.62 ms (run 2) of each other, against 4.7 ms before the delays; levels sit within about 2 dB.
+The "before" arrivals are the measured ones minus the applied delay. **The sub (LFE) arrives about 7 ms after the front left** (group delay near 15 ms at 50 to 100 Hz), yet its delay is
+still kept equal to FL's; see [status](docs/status.md).
 
 ### A4. Heights: tone-match and bass management
 
-![Heights](docs/graphs/05_heights.png)
+![Heights tone](docs/graphs/12_heights_tone_before_after.png)
 
-The ceiling speakers have no output below about 125 Hz, so their bass is sent to the sub (bass gap to the bed from about 25 dB rms to under 4 dB), and three
-fitted filters pull their tone towards the bed. The tone gain is modest on the 19 Oct baseline (about 0.5 dB) and larger in the two same-session sweeps (4.5/4.1 to 3.1/3.5 dB).
+![Heights bass](docs/graphs/13_heights_bass.png)
+
+The ceiling speakers have no output below about 125 Hz, so their bass is sent to the sub, and three fitted filters pull their tone towards the bed
+(from 4.7 / 4.2 to 3.0 / 3.4 dB rms against the bed, 170 Hz to 12.5 kHz). The mic moved a little between the two runs, so this is a modest, real improvement, not a precise one.
 
 ### A5. The sub and the room modes
 
-![Sub and room modes](docs/graphs/06_sub_and_room_modes.png)
+![Sub range and distortion](docs/graphs/06_sub_range_and_distortion.png)
 
-Clean to about 40 Hz, usable to 36 Hz, audible but 14 to 16 per cent distorted at 25 to 32 Hz, nothing usable under 22 Hz, and no compression. The stepped-tone
-rattle hunt found nothing that grew out of proportion; the loud-scene buzz is still open ([status](docs/status.md)).
+![Hot sub run](docs/graphs/17_hot_sub_run.png)
+
+Clean to about 40 Hz, usable to 36 Hz, audible but heavily distorted below about 30 Hz, nothing usable under 22 Hz. The stepped-tone rattle hunt flags nothing (`16_rattle_hunt.png`);
+the loud-scene buzz is still open ([status](docs/status.md)). In the hot run the recording peaks at the same level on eight tones from 31.5 to 71 Hz, which points at a limit in the chain
+rather than a rattle; the recording cannot say where.
 
 ### A6. Dialogue
 
 ![Dialogue](docs/graphs/07_dialogue.png)
 
-Intelligibility is in the "excellent" range and the dialogue sits 13 to 18 dB above the room noise in every octave band. These values come from the dialogue-kit report
-quoted in the working session of 2026-10-24; [status.md](docs/status.md) still lists the kit as not yet run in the room, so treat this figure as unreconciled until that line is updated.
+Real recording of the dialogue kit in the room (dlg1.wav). STI is 0.79 to 0.83 ("excellent"), the dialogue sits 13 to 18 dB above the room noise in every octave band, and the
+phantom centre (FL + FR) scores 0.81 against 0.79 for the real centre.
 
 ### A7. Early reflections
 
 ![Early reflections](docs/graphs/08_early_reflections.png)
 
-Centre and front right meet the ITU-R BS.1116 limit; the front left has one reflection at 5.1 ms (-8 dB) and both heights have one about 1 dB below the direct sound at
-3.6 to 3.8 ms. There is no panels-off baseline yet, so this shows where the energy is, not what the panels do.
+Measured on sweep run 2: centre (-14.1 dB) and front right (-13.8 dB) meet the ITU-R BS.1116 limit of -10 dB; the front left fails with one reflection at 5.1 ms (-8.4 dB),
+and both heights have one almost as strong as the direct sound (-1.3 and -0.6 dB at 3.6 and 3.8 ms). There is no panels-off baseline yet, so this shows where the energy is, not what the panels do.
+The summary bar chart is `08b_early_reflections_summary.png`.
 
 ### Also in the folder
 
@@ -250,4 +259,9 @@ Centre and front right meet the ITU-R BS.1116 limit; the front left has one refl
 | `10_verification_summary.png` | Delays, levels and heights results of the 23 Oct sweep runs |
 | `11_upmix_adaptive_vs_fixed.png` | Adaptive ambience prototype against the fixed matrix (offline only) |
 
-Regenerate with `python3 tools/make-graphs.py` and `python3 tools/make-verification-figures.py` (numpy and matplotlib).
+| `14_tone_each_speaker.png` | Tone of each of the seven speakers against the bed |
+| `16_rattle_hunt.png` | Stepped-tone rattle hunt |
+| `18_amaze_buzz.png` | Dolby Amaze clip spectra |
+| `19_presets_recorded_vs_predicted.png` | `thump20x` and `tight20x`, recorded against predicted |
+
+Regenerate with `python3 tools/make-graphs.py`, `python3 tools/make-verification-figures.py` and, with the recordings, `python3 tools/make-recording-graphs.py --help` (numpy, scipy and matplotlib).

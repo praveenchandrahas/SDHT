@@ -33,7 +33,14 @@ plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.righ
                      "grid.alpha": 0.25, "figure.dpi": 100})
 
 
+REDRAWN_FROM_RECORDINGS = {"03_drone2_predicted_vs_recorded", "07_dialogue", "08_early_reflections"}
+
+
 def save(fig, name, note):
+    if name in REDRAWN_FROM_RECORDINGS:
+        print("skip", name, "(drawn from the recordings by tools/make-recording-graphs.py)")
+        plt.close(fig)
+        return
     for a in fig.axes:
         if a.get_xscale() == "log":
             a.minorticks_off()
