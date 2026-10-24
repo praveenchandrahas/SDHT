@@ -9,6 +9,10 @@
 - `tools/sweeptest/`, `tools/subtest/`: measurement through CamillaDSP (alignment, heights fit, sub range, rattle hunt).
 - Docs: alignment verification, heights section, sub range and the Amaze buzz investigation, decisions D14-D17.
 
+## 2026-10-24
+- Reboot test on the real system: services and standing profile up at boot, `mpv-atmos` plays Atmos 8 ch (docs/status.md).
+- `make-subtest.py --boost=X` (+X dB on sweeps and tones, refused above -1 dBFS), `phone-to-wav.sh`, second hot-run procedure in tools/subtest/README.md.
+
 ## 2026-10-21 (later)
 - Added `docs/omniphony-debugging.md`, `docs/technical-writeup.md`, a whole-system diagram, and README credits for Omniphony, harletty-bridge and truehdd.
 

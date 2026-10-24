@@ -11,7 +11,7 @@ Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording o
 | Heights are bass-managed into the sub and tone-matched to the bed | Sweep run 2 with the profile on: heights + sub within 2.6/2.7 dB rms of the bed over 40-400 Hz (was ~40 dB); tone deviation 3.1/3.5 dB rms (was 4.5/4.1); heights ran 2-3 dB hot with the first trim, lowered to +1.0 dB (not re-measured) | Measured |
 | Sub range | Sweeps at 3 levels: clean to about 40 Hz, usable 36 Hz, audible but 15%+ distortion at 25-31 Hz, nothing usable under 22 Hz; no compression | Measured |
 | A rattle/buzz in loud bass scenes | Owner: it is the sub cabinet rattling at particular frequency/amplitude combinations (heard in the room). Not reproduced by steady tones at -14 dBFS (6-12 dB quieter than the film's bass). A fixed ~100 Hz component in the Amaze recording is consistent with either that or the room's +5 dB peak at 100 Hz; the recording cannot tell them apart. Next: the same tone kit at -8/-3 dBFS with hand-on-cabinet checks | Open |
-| Standing profile (`./make-default.sh`, `eq ensure` in mpv-atmos) survives reboot and starts the services | Config file persistence and tests only | **Not yet tested on the real system** |
+| Standing profile (`./make-default.sh`, `eq ensure` in mpv-atmos) survives reboot and starts the services | 2026-10-24 cold boot (uptime 0 min): `eq status` = EQ ON, router active, CamillaDSP active with `drone2, bed alignment: yes, heights: bass to sub + tone-match`; `mpv-atmos` then started Blade Runner 2049 (TrueHD Atmos, 8 ch float to PipeWire, 3 dropped frames in 18 s) | **Verified at boot**; `eq status` was taken before playback, so "audio goes through CamillaDSP" while playing is not captured |
 | Auto-routing starts with the system and handles mpv, stereo, 5.1 and 8 channels | Simulated PipeWire graph only (`tests/test_router.py`) | **Not yet tested on the real system** |
 | The `eq` switch works mid-film | Simulated only | **Not yet tested** |
 | Lip-sync is fine with CamillaDSP in the path | Owner: no lip-sync issue at all on real material; not measured (estimated added delay was 20-45 ms) | Owner-verified (listening) |
@@ -20,7 +20,7 @@ Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording o
 
 ## Checks still to do
 
-1. **Reboot test.** Reboot, start a film without touching anything, run `eq status`: expect "audio goes through CamillaDSP".
+1. **Reboot test (mostly done 2026-10-24).** Still missing: `eq status` while a film is playing (expect "audio goes through CamillaDSP"), and the fallback when CamillaDSP is stopped.
 2. **Port names.** While Atmos content plays, then a 5.1 file, record `pw-link -o | grep mpv` in [architecture.md](architecture.md).
    The router handles any port subset, but `route-mpv.sh` reported 8 channels linked while a 6-channel FLAC played: write down why.
 3. **Lip-sync.** Watch a clear-speech clip with `eq on` and `eq off`; adjust `--audio-delay` if a difference is visible.
