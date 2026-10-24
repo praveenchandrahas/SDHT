@@ -26,3 +26,4 @@ Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording o
 3. **Lip-sync.** Watch a clear-speech clip with `eq on` and `eq off`; adjust `--audio-delay` if a difference is visible.
 4. **Alignment proof.** The bed-off versus bed-on recording in [measurement.md](measurement.md#proof-of-the-alignment-still-open).
 5. **Real films.** A few non-trailer films (dialogue-heavy, quiet) with the final settings.
+6. **Upmix by ear.** Measured offline only. At the rig: a YouTube clip (speech, then music) in `stereo:voice|balanced|wide`, and a 5.1 film in `bed:subtle|balanced|wide`; note the flavour you prefer. Chrome routing to CamillaDSP is not built: needs `pw-link -o | grep -i chrome` while Chrome plays.
