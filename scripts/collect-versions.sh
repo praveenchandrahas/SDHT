@@ -44,10 +44,11 @@ gitinfo() { # gitinfo path : git commit, tag and remote of the repository holdin
   git -C "$d" log -1 --format='commit %H%ndate   %cd%nsubject %s' 2>&1
   git -C "$d" remote -v 2>&1 | head -2
 }
-strings_ver() { # strings_ver file : version-looking strings embedded in a binary or library
+strings_ver() { # strings_ver file : the few version strings these Rust libraries embed (short, no binary noise)
   have strings || { echo "(strings not installed: sudo apt install binutils)"; return; }
-  strings -n 5 "$1" 2>/dev/null | grep -i -E '(version|v?[0-9]+\.[0-9]+\.[0-9]+)' | grep -i -E 'harletty|omniphony|orender|truehd|camilla|bridge|version' | sort -u | head -12
+  strings -n 5 "$1" 2>/dev/null | grep -a -o -E 'bridge_api;[0-9.]+|format_bridge[0-9.]+|abi_stable;[0-9.]+|rustc version [0-9.]+ \([^)]*\)|(harletty|orender|omniphony)[-_a-z]*[ -]v?[0-9]+\.[0-9]+\.[0-9]+' | sort -u | head -12
 }
+sums() { have sha256sum && sha256sum "$@" 2>/dev/null | cut -c1-16,65-; }   # first 16 hex digits of the hash, then the path
 
 report() {
   printf '# SDHT versions and configuration\n\nCollected %s on %s by `scripts/collect-versions.sh` (read-only).\n' "$(date '+%F %T %Z')" "$(hostname)"
@@ -77,7 +78,7 @@ report() {
     printf '**status**\n'; systemctl --user is-active camilladsp.service 2>&1 | code
   fi
   printf '**running process**\n'; (pgrep -a camilladsp || echo "(not running)") | code
-  for c in $(findf '*.yml' | grep -i camilla | head -5); do printf '**config file: %s**\n' "$c"; head -50 "$c" | code; done
+  for c in $(findf '*.yml' | grep -i camilla | head -5); do printf '**config file: %s**\n' "$c"; head -250 "$c" | code; done
   have ss && { printf '**websocket / ports**\n'; ss -ltnp 2>/dev/null | grep -i camilla | code; }
 
   h "Omniphony (renderer, liborender)"
@@ -85,7 +86,7 @@ report() {
   if [ ${#LO[@]} -eq 0 ]; then echo "_no liborender / libomniphony found in the searched directories ($SEARCH_DIRS). Re-run with SDHT_EXTRA_DIRS=\"/where/you/built/it\"._"; fi
   for f in "${LO[@]}"; do
     printf '**%s**\n' "$f"
-    { ls -l "$f"; (have readlink && readlink -f "$f"); strings_ver "$f"; gitinfo "$f"; } 2>&1 | code
+    { ls -l "$f"; sums "$f"; strings_ver "$f"; gitinfo "$f"; } 2>&1 | code
   done
   for b in $(findf 'orender*' ; findf 'omniphony*' | grep -v -E '\.(so|conf|json|ya?ml|md|txt|lua|png)(\.|$)'); do
     [ -f "$b" ] && [ -x "$b" ] && { printf '**%s --version**\n' "$b"; timeout 5 "$b" --version 2>&1 | head -5 | code; }
@@ -95,34 +96,45 @@ report() {
     [ -d "$d" ] && { printf '**contents of %s**\n' "$d"; find "$d" -maxdepth 3 -type f -printf '%TY-%Tm-%Td  %s  %p\n' 2>/dev/null | head -40 | code; }
   done
 
+  for f in "$HOME/.config/omniphony/config.yaml" "$HOME/.config/omniphony/overlay-prefs.conf"; do
+    [ -f "$f" ] && { printf '**%s**\n' "$f"; head -120 "$f" | code; }
+  done
+
   h "harletty-bridge (Atmos decoder plugin)"
   mapfile -t HB < <(findf 'libharletty*' ; findf 'harletty*' | grep -v -E '\.(md|txt)$')
   if [ ${#HB[@]} -eq 0 ]; then echo "_no harletty files found in the searched directories. Re-run with SDHT_EXTRA_DIRS=\"/where/you/built/it\"._"; fi
   for f in "${HB[@]}"; do
     [ -f "$f" ] || [ -d "$f" ] || continue
     printf '**%s**\n' "$f"
-    { ls -ld "$f"; [ -f "$f" ] && strings_ver "$f"; gitinfo "$f"; } 2>&1 | code
+    { ls -ld "$f"; [ -f "$f" ] && sums "$f"; [ -f "$f" ] && strings_ver "$f"; gitinfo "$f"; } 2>&1 | code
   done
   printf '**Is the plugin loaded by the running mpv?**\n'
   { for p in $(pgrep -x mpv; pgrep -f mpv-omniphony); do [ -r /proc/$p/maps ] && grep -h -i -E 'harletty|orender|omniphony' /proc/$p/maps | awk '{print $6}' | sort -u; done; } 2>/dev/null | sort -u | code
   have cargo && { printf '**cargo**\n'; cargo --version 2>&1 | code; cargo install --list 2>/dev/null | grep -i -E 'harletty|omniphony|orender' | code; }
 
   h "mpv (mpv-omniphony build)"
-  for m in $(which -a mpv-omniphony mpv 2>/dev/null | sort -u) $(findf 'mpv-omniphony*' | grep -v -E '\.(md|txt|lua|conf)$'); do
-    [ -f "$m" ] && [ -x "$m" ] && { printf '**%s**\n' "$m"; { ls -l "$m"; timeout 8 "$m" --version 2>&1 | head -12; } | code; }
+  for m in $( { which -a mpv-omniphony mpv 2>/dev/null; findf 'mpv-omniphony*' | grep -v -E '\.(md|txt|lua|conf)$'; command -v mpv-atmos >/dev/null && sed -n 's/^exec "\(.*\)" *\\$/\1/p' "$(command -v mpv-atmos)" | sed "s#\$HOME#$HOME#"; } | while read -r x; do readlink -f "$x" 2>/dev/null; done | sort -u ); do
+    [ -f "$m" ] && [ -x "$m" ] && { printf '**%s**\n' "$m"; { ls -l "$m"; sums "$m"; timeout 8 "$m" --version 2>&1 | head -12; } | code; }
   done
   [ -f "$(command -v mpv-atmos 2>/dev/null)" ] && { printf '**wrapper: mpv-atmos (%s)**\n' "$(command -v mpv-atmos)"; cat "$(command -v mpv-atmos)" | head -80 | code; }
-  [ -f "$(dirname "$0")/mpv-atmos" ] && { printf '**wrapper in the repository: scripts/mpv-atmos (md5 %s)**\n' "$(md5sum "$(dirname "$0")/mpv-atmos" | cut -d' ' -f1)"; }
+  W="$(command -v mpv-atmos 2>/dev/null || true)"
+  for R in "$(dirname "$0")/mpv-atmos" "$(dirname "$0")/scripts/mpv-atmos"; do
+    if [ -f "$R" ] && [ -n "$W" ] && [ "$(readlink -f "$R")" != "$(readlink -f "$W")" ]; then
+      printf '**installed mpv-atmos against %s (diff; empty = identical)**\n' "$R"; diff "$W" "$R" 2>&1 | head -60 | code
+    fi
+  done
   have dpkg && { printf '**packages**\n'; dpkg -l 2>/dev/null | awk '/^ii/ && ($2 ~ /^(mpv|libmpv|ffmpeg|libavcodec|libplacebo|libvulkan|mesa-vulkan|intel-media|libva)/) {print $2, $3}' | head -20 | code; }
 
   h "mpv configuration (as used)"
-  for d in "$HOME/.config/mpv" "$HOME/.config/mpv-omniphony" "${XDG_CONFIG_HOME:-$HOME/.config}/mpv"; do
+  CFG="$(printf '%s\n' "$HOME/.config/mpv" "$HOME/.config/mpv-omniphony" "${XDG_CONFIG_HOME:-$HOME/.config}/mpv" | sort -u)"
+  [ -f "$HOME/.config/mpv/mpv.conf" ] || echo "_There is no ~/.config/mpv/mpv.conf: mpv is configured by the command-line options in the mpv-atmos wrapper (above)._"
+  for d in $CFG; do
     [ -d "$d" ] || continue
     printf '**%s**\n' "$d"; find "$d" -maxdepth 3 -type f -printf '%TY-%Tm-%Td  %s  %p\n' 2>/dev/null | sort | head -60 | code
     for f in mpv.conf input.conf; do
       [ -f "$d/$f" ] && { printf '**%s/%s**\n' "$d" "$f"; cat "$d/$f" | code; }
     done
-    for f in "$d"/script-opts/*.conf "$d"/profiles/* ; do [ -f "$f" ] && { printf '**%s**\n' "$f"; head -60 "$f" | code; }; done
+    for f in "$d"/script-opts/*.conf "$d"/profiles/* ; do [ -f "$f" ] && { printf '**%s**\n' "$f"; head -25 "$f" | code; }; done
     ls "$d"/scripts 2>/dev/null | { printf '**scripts/**\n'; code; }
   done
 

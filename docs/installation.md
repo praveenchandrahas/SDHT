@@ -16,16 +16,32 @@ tested in simulation (see [status.md](status.md)).
 
 Debian/Ubuntu-style packages: `pipewire-bin wireplumber pulseaudio-utils ffmpeg python3-numpy python3-scipy python3-yaml python3-matplotlib`.
 
-## 2. Player stack (TODO(owner))
+## 2. Player stack
 
-TODO(owner): document these, with links to the upstream projects and the versions used:
+### Versions recorded on the reference laptop (2026-10-24, from `scripts/collect-versions.sh`)
 
-- Omniphony (liborender ABI 0.6 / 0.3.0, commit 6ffaf21, built 2026-07-24) and where it is installed
-  (`~/.local/share/omniphony/lib/liborender.so.0` was seen in mpv's startup output).
-- harletty-bridge version, how it is wired to mpv.
-- mpv-omniphony v0.4.2 build steps (built from source; the prebuilt binary was broken).
-- The `mpv-atmos` alias or script: exact command line and the `--ad-orender-library` option.
-- `mpv.conf` (video side: gpu-next, tone-mapping, hardware decode).
+| Part | Version and where | Notes |
+|------|-------------------|-------|
+| Laptop | TIMI "Mi NoteBook Ultra", Core i5-11300H, 15.4 GB, Iris Xe | VAAPI driver iHD 24.1.0, Mesa Vulkan 25.2.8 |
+| OS | Ubuntu 24.04.5 LTS, kernel 7.0.0-38-generic, KDE on Wayland | |
+| PipeWire | 1.0.5 (`1.0.5-1ubuntu3.3`) | clock 48 kHz only, quantum 1024 (min 32, max 2048) |
+| WirePlumber | 0.4.17 (`0.4.17-1ubuntu4.1`) | |
+| CamillaDSP | 4.1.3 (05e9cfc), `/usr/local/bin/camilladsp`, user service `camilladsp.service` | PipeWire capture and playback, 8 channels, chunk size 1024; config `~/.config/camilladsp/config.yml` is written by `set-eq.py` |
+| Omniphony | package `omniphony-studio` 0.4.2; `liborender` 0.3.0 (bridge API 0.3.0, `abi_stable` 0.11.3) | Two copies of 10,284,384 bytes: `/usr/lib/Omniphony Studio/engine/liborender.so.0` (25 Jul) and the one mpv loads, `~/.local/share/omniphony/lib/liborender.so.0` (2 Aug). The git commit is not recoverable from the install (no checkout); the earlier note of commit 6ffaf21 is not re-verified |
+| harletty-bridge | `libharletty_bridge.so`, 3,636,184 bytes (2 Aug), bridge API 0.3.0, built with rustc 1.97.1 | The library carries no version number or commit. A copy sits in `~/.local/share/omniphony/lib/` and the one mpv is told to use is next to the mpv-omniphony build |
+| mpv-omniphony | mpv 0.41.0 (patched, "-dirty"), built from source on 2 Aug 2026 16:19, `~/HomeTheatre/Omniphony/mpv-omniphony-v0.4.2-linux-x86_64/mpv-omniphony/build/mpv-v0.41.0/_b/mpv` | FFmpeg 6.1.1-3ubuntu5+esm15, libplacebo 6.338.2. The system mpv (0.37.0) and a snap mpv are separate and not used by `mpv-atmos` |
+
+Not yet confirmed: whether the running mpv has loaded the bridge (the check needs a film playing), and the contents of `~/.config/omniphony/config.yaml` (23 Oct, "measured layout"). The USB interface was not plugged in during this run, so the audio-device section shows only the laptop's own outputs.
+
+### mpv configuration
+
+There is **no `mpv.conf`** on the rig. Everything (decoder, VAAPI, gpu-next on Vulkan, tone-mapping to 60 nits, debanding, cache) is passed on the command line by the `mpv-atmos` wrapper; the repository copy is `scripts/mpv-atmos`. Besides the wrapper, `~/.config/mpv/` holds `input.conf` (`o` toggles the Omniphony trajectory overlay), the `uosc` on-screen UI with its `script-opts/uosc.conf`, and `scripts/mpv-atmos-overlay-off.lua` (the repository copy is `scripts/mpv-atmos-overlay-off.lua`).
+
+**The wrapper installed on the laptop is older than the repository copy.** It runs `eq ensure` but not `eq prepare`, and it does not open mpv's IPC socket (`--input-ipc-server`), so automatic profile selection per file cannot work from it. To use it, copy `scripts/mpv-atmos` over `~/.local/bin/mpv-atmos` (the `OMNI=` path in it is the one this laptop uses).
+
+### Still TODO(owner)
+
+- Build and install steps for Omniphony and harletty-bridge, with upstream links (the mpv-omniphony build is in [omniphony-debugging.md](omniphony-debugging.md)).
 - Media library mount (decide how much to document).
 
 ## 3. Configure the interface name

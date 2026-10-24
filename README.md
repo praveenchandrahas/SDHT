@@ -198,7 +198,7 @@ Prerequisites, built first and not covered by the command below: the patched mpv
 
 Not yet recorded, so not stated here (the checklist is [docs/todo-fill-in.md](docs/todo-fill-in.md); `TODO(owner)` marks the spots in the docs):
 
-- TODO: exact versions of Omniphony, harletty-bridge, CamillaDSP and PipeWire (only mpv 0.41.0 is recorded), and the current `mpv.conf`.
+- Recorded on 2026-10-24: PipeWire 1.0.5, WirePlumber 0.4.17, CamillaDSP 4.1.3, liborender 0.3.0 (omniphony-studio 0.4.2), mpv 0.41.0 (patched, built from source); see [docs/installation.md](docs/installation.md#2-player-stack). TODO: the harletty-bridge commit (the library carries no version) and the Omniphony commit. There is no `mpv.conf`: mpv is configured in the `mpv-atmos` wrapper.
 - TODO: bill of materials with sources and prices, the media-library mount and the laptop-to-projector HDMI path.
 - TODO: CPU and latency of the live decode and render chain (the 4 % and 21 ms figures are for the upmix engine only).
 - TODO: whether DTS:X works on this rig (harletty-bridge advertises DTS and DTS:X input; it has not been tested here).

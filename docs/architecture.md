@@ -145,4 +145,4 @@ again with a recording. That loop is how every preset and the alignment table we
 | Related builds | Custom subwoofer (JBL A1500HI, 75 L vented, tuned about 24-25 Hz): on hold, not in the signal chain. |
 
 Software versions seen: CamillaDSP 4.1.3, liborender ABI 0.6 (0.3.0, commit 6ffaf21, built 2026-07-24),
-mpv-omniphony 0.4.2, REW 5.31.3. TODO(owner): PipeWire, WirePlumber, harletty-bridge versions.
+mpv-omniphony 0.4.2 (mpv 0.41.0), PipeWire 1.0.5, WirePlumber 0.4.17, REW 5.31.3; harletty-bridge carries no version number. Full table: [installation.md](installation.md#2-player-stack).
