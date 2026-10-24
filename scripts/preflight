@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+# preflight: read-only health report for the theater rig. Run it at the rig with the USB DAC connected, ideally after a fresh boot,
+# then paste the report (also saved to ~/theater-preflight-<time>.txt) into the chat. Nothing is played and nothing is changed.
+#
+#   preflight                     the report
+#   preflight --tests             also run the repository's test suite (needs the repo; set SDHT=/path/to/repo if it is not ~/SDHT)
+#   preflight capture SOURCE [S]  record S seconds (default 30) of a digital-input source and try to decode it as Dolby Digital
+#                                 (the Fire Stick optical-in test). SOURCE is a name from: pactl list short sources
+USB="${THEATER_USB:-alsa_output.usb-0d8c_USB_Sound_Device-00.analog-surround-71}"
+have() { command -v "$1" >/dev/null 2>&1; }
+run() { echo "\$ $*"; timeout "${T:-10}" "$@" 2>&1 | head -"${N:-40}"; }
+sec() { echo; echo "== $1 =="; }
+ok() { echo "OK    $*"; }
+warn() { echo "WARN  $*"; }
+
+if [ "$1" = capture ]; then
+    SRC="$2"; SECS="${3:-30}"
+    [ -n "$SRC" ] || { echo "usage: preflight capture SOURCE [seconds]   (see: pactl list short sources)"; exit 1; }
+    have pw-record && have ffmpeg && have ffprobe || { echo "needs pw-record, ffmpeg and ffprobe"; exit 1; }
+    F=$(mktemp /tmp/spdif-probe-XXXXXX.wav)
+    echo "recording $SECS s from $SRC (start Dolby Digital playback on the Fire Stick now) ..."
+    timeout -s INT "$SECS" pw-record --target "$SRC" --rate 48000 --format s16 --channels 2 "$F" 2>/dev/null
+    echo "-- what ffmpeg sees in the bits (expect ac3 and 6 channels):"
+    ffprobe -v error -f spdif -show_entries stream=codec_name,channels,channel_layout -of default=nw=1 "$F" 2>&1 | head
+    n=$(ffmpeg -v warning -f spdif -i "$F" -f null - 2>&1 | grep -c -i -E "error|invalid|sync|corrupt|missing")
+    echo "-- decode warnings over $SECS s: $n  (0 = bit-exact and no slips; a few = occasional dropouts; many or no stream = not usable)"
+    rm -f "$F"
+    exit 0
+fi
+
+REPORT="$HOME/theater-preflight-$(date +%Y%m%d-%H%M%S).txt"
+exec > >(tee "$REPORT") 2>&1
+echo "theater preflight $(date -Is)"
+
+sec "system"
+grep -E "^(PRETTY_NAME|VERSION_ID)=" /etc/os-release
+echo "kernel $(uname -r); session: ${XDG_SESSION_TYPE:-unknown}; desktop: ${XDG_CURRENT_DESKTOP:-unknown}"
+have pipewire && pipewire --version | tail -1
+have wireplumber && wireplumber --version | head -1
+have mpv && mpv --version | head -1
+have camilladsp && camilladsp --version
+echo "cpu governor: $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo n/a)"
+
+sec "tools and python modules"
+for t in pw-link pw-top pw-dump pw-cat pw-record wpctl pactl aplay arecord amixer camilladsp ffmpeg ffprobe mpv socat busctl eq theater-route; do
+    have "$t" && ok "$t" || warn "$t missing"
+done
+python3 - <<'E' 2>&1
+for m in ("numpy", "scipy", "yaml"):
+    try:
+        __import__(m); print("OK   ", "python", m)
+    except ImportError:
+        print("WARN  python", m, "missing (sudo apt install python3-" + ("yaml" if m == "yaml" else m) + ")")
+E
+
+sec "installed scripts match the repository"
+SD="${SDHT:-$HOME/SDHT}"; [ -d "$SD/scripts" ] || SD="$HOME/sdht"
+if [ -d "$SD/scripts" ]; then
+    for f in theater-route set-eq.py upmix.py upmix_engine.py mpv-atmos; do
+        i="$HOME/.local/bin/$f"
+        [ -e "$i" ] && { cmp -s "$i" "$SD/scripts/$f" && ok "$f identical to the repo" || warn "$f differs from the repo (re-run install-autoroute.sh?)"; } || warn "$f not installed in ~/.local/bin"
+    done
+else
+    warn "repository not found (set SDHT=/path)"
+fi
+
+sec "services"
+for u in pipewire wireplumber pipewire-pulse theater-router theater-upmix; do echo "$u: $(systemctl --user is-active $u 2>&1)"; done
+systemctl --user list-units --type=service --no-legend 2>/dev/null | grep -i camilla
+echo "rtkit-daemon: $(systemctl is-active rtkit-daemon 2>&1); RLIMIT_RTPRIO: $(ulimit -r)"
+N=15 run journalctl --user -u theater-upmix -n 15 --no-pager
+N=10 run journalctl --user -u theater-router -n 10 --no-pager
+
+sec "USB DAC (Vantec)"
+if lsusb 2>/dev/null | grep -qi 0d8c; then ok "USB device 0d8c present"; lsusb | grep -i 0d8c; else warn "no USB device 0d8c: is the DAC connected?"; fi
+pactl list short sinks 2>/dev/null | grep -q "$USB" && ok "sink $USB" || warn "sink $USB not found; usb sinks: $(pactl list short sinks 2>/dev/null | awk '{print $2}' | grep -i usb | tr '\n' ' ')"
+echo "-- sources (a digital/IEC958 input would show here):"; pactl list short sources 2>/dev/null | grep -v monitor
+echo "-- card profiles of the DAC:"
+pactl list cards 2>/dev/null | awk '/^Card #/{c=0} /0d8c|USB Sound Device/{c=1} c' | grep -i -E "profiles:|iec958|surround|stereo|Active Profile" | head -25
+card=$(grep -i "USB Sound Device" /proc/asound/cards 2>/dev/null | awk '{print $1}' | head -1)
+if [ -n "$card" ]; then
+    echo "-- ALSA card $card controls mentioning digital/capture:"
+    amixer -c "$card" contents 2>/dev/null | grep -i -E "iec958|spdif|capture source|digital" | head
+    arecord -l 2>/dev/null | grep -i -A1 "card $card"
+fi
+
+sec "audio outputs available (for the soundbar over HDMI)"
+pactl list short sinks 2>/dev/null | awk '{print $2}'
+
+sec "routing and the standing profile"
+have eq && { N=40 run eq status; N=5 run eq source; } || warn "eq not installed"
+echo "-- links involving the DSP, mpv, the engine and the DAC:"
+pw-link -l 2>/dev/null | grep -i -E "camilla|mpv|theater|0d8c" | head -50
+echo "-- Chrome nodes (for the stereo-app regex):"; pw-link -o 2>/dev/null | grep -i chrom | head -4
+
+sec "graph health (xruns show as ERR)"
+have pw-top && { T=8 N=30 run pw-top -b -n 2; } || warn "pw-top missing"
+
+sec "display and mpv"
+for s in /sys/class/drm/*/status; do [ -e "$s" ] && echo "$(basename "$(dirname "$s")"): $(cat "$s")"; done 2>/dev/null
+if have mpv; then
+    mpv --list-options 2>/dev/null | grep -E "^ --(hdr-compute-peak|hdr-peak|hdr-contrast|target-peak|target-contrast|tone-mapping|gamut)" | head -12
+    S="${THEATER_MPV_SOCK:-${XDG_RUNTIME_DIR:-/tmp}/theater-mpv.sock}"
+    if [ -S "$S" ] && have socat; then
+        for p in hdr-compute-peak target-peak target-contrast hwdec vo; do
+            echo -n "mpv $p = "; echo "{\"command\":[\"get_property\",\"options/$p\"]}" | socat - "$S" 2>/dev/null | head -1
+        done
+    else
+        echo "(start a film with mpv-atmos and re-run to read the live mpv options)"
+    fi
+fi
+
+if [ "$1" = "--tests" ]; then
+    sec "repository tests"
+    if [ -f "$SD/tests/run.sh" ]; then
+        out=$(bash "$SD/tests/run.sh" 2>&1)
+        echo "PASS lines: $(echo "$out" | grep -c '^PASS')"
+        echo "$out" | grep -E "^FAIL|Traceback" | head -20
+    else
+        warn "tests/run.sh not found"
+    fi
+fi
+echo; echo "report saved to $REPORT"

@@ -20,6 +20,8 @@ Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording o
 
 ## Checks still to do
 
+0. **Run `scripts/preflight` at the rig** (USB DAC connected, ideally after a fresh boot) and send the report. It is read-only: it checks tools, services, the DAC's profiles and inputs, links, xruns, real-time priority and the live mpv options. `preflight --tests` adds the repository tests; `preflight capture SOURCE` is the Fire Stick optical-in decode test.
+
 1. **Reboot test at the rig.** Services and profile came up at boot (2026-10-24, laptop away from the rig). Still to do with the Vantec connected: start a film, run `eq status`, expect "audio goes through CamillaDSP"; then stop CamillaDSP and confirm the direct fallback.
 2. **Port names.** While Atmos content plays, then a 5.1 file, record `pw-link -o | grep mpv` in [architecture.md](architecture.md).
    The router handles any port subset, but `route-mpv.sh` reported 8 channels linked while a 6-channel FLAC played: write down why.
