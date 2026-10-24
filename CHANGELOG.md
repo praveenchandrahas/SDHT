@@ -17,6 +17,7 @@
 
 - `scripts/upmix.py`, `set-eq.py --upmix=stereo|bed[:flavour]`: stereo -> 5.1.2 (real centre, Haas-delayed decorrelated surrounds and heights) and 5.1 -> 5.1.2 bed (ambience heights, dialogue stays front). Three flavours each. `tools/upmixtest/` measures them offline with the real CamillaDSP. Tests extended.
 - `theater-route`: automatic profile. Chrome playing -> stereo upmix and Chrome patched into CamillaDSP FL/FR; mpv source read over IPC (Atmos -> film, 5.1 -> bed, stereo -> stereo upmix); idle -> film. `eq mode|flavour|source|prepare`; `mpv-atmos` selects the profile before mpv starts and opens the IPC socket. `set-eq.py` writes a `# theater-profile:` header into the config. Router tests extended (51 checks).
+- Adaptive stereo upmix: `scripts/upmix_engine.py` (streaming STFT ambience extractor, 4 % of a core, 21.3 ms) feeding the surrounds and heights through a new `stereo-ad` profile in `upmix.py`; router starts/stops it as `theater-upmix.service`, links it, and falls back to the fixed matrix if it does not come up (`eq engine on|off`). Installer now also installs `set-eq.py`, `upmix.py`, `upmix_engine.py` (without them the router could not switch profiles). tests/test_engine.py; 148 checks in total.
 - Decorrelators rebuilt (group-delay construction): the first version was a near plain delay (0.95-0.99 correlated below 2 kHz).
 
 ## 2026-10-21 (later)

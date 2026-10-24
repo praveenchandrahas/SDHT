@@ -76,7 +76,19 @@ mpv wins when both play, so a Chrome ping (WhatsApp, say) during a film changes 
 mid-film. For plain `mpv`, put `input-ipc-server=/run/user/1000/theater-mpv.sock` in `~/.config/mpv/mpv.conf` (use your own UID).
 If mpv does not report a track within 8 s the router assumes `film`. A switch restarts CamillaDSP (about a second of silence) and is rate-limited to one per 8 s.
 
-Commands: `eq mode auto|film|stereo|bed` (fixed override until `auto`), `eq flavour stereo|bed NAME`, `eq source` (what mpv reports and how it is classified;
+### Adaptive stereo upmix (the engine)
+
+For stereo sources the upmix is adaptive by default (`eq engine on`): `scripts/upmix_engine.py` runs as `theater-upmix.service`, started and stopped by
+the router while the `stereo-ad` profile is active (not enabled at boot). It reads the app's FL/FR through a PipeWire stream (`theater-upmix-in`), separates
+direct sound from ambience per time-frequency tile and sends only the ambience (`theater-upmix-out`, AUX0-3) into CamillaDSP's surrounds and heights, where the
+usual high-pass, decorrelation, delays, bass management and EQ apply. The fronts and the centre do not go through it (zero added latency, lip-sync unchanged);
+the engine adds about 21 ms plus buffers to the rear/ceiling feeds only, which the Haas delays account for.
+Measured offline (tools/upmixtest/README.md): a panned instrument leaks about 20 dB less into the rear than with the fixed matrix on realistic (harmonic) material;
+on noise-like sources it is no better. Cost: about 4 % of one core. If the engine does not come up within 12 s the router falls back to the fixed matrix by itself
+and says so in its log; `eq engine on` retries, `eq engine off` forces the fixed matrix. Needs numpy and scipy (the installer says if they are missing).
+Re-run `scripts/install-autoroute.sh` after pulling: it now installs `set-eq.py`, `upmix.py` and `upmix_engine.py` next to `theater-route`.
+
+Commands: `eq mode auto|film|stereo|bed` (fixed override until `auto`), `eq flavour stereo|bed NAME`, `eq engine on|off`, `eq source` (what mpv reports and how it is classified;
 paste it if detection looks wrong), `eq status` (profile, Chrome patch state, source). With `eq off` nothing is switched or patched.
 Not verified on the real system yet: Chrome's PipeWire node name (check `eq status` while Chrome plays) and whether WirePlumber leaves a re-linked Chrome stream alone.
 
