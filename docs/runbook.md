@@ -86,7 +86,7 @@ the engine adds about 21 ms plus buffers to the rear/ceiling feeds only, which t
 Measured offline (tools/upmixtest/README.md): a panned instrument leaks about 20 dB less into the rear than with the fixed matrix on realistic (harmonic) material;
 on noise-like sources it is no better. Cost: about 4 % of one core. If the engine does not come up within 12 s the router falls back to the fixed matrix by itself
 and says so in its log; `eq engine on` retries, `eq engine off` forces the fixed matrix. Needs numpy and scipy (the installer says if they are missing).
-Re-run `scripts/install-autoroute.sh` after pulling: it now installs `set-eq.py`, `upmix.py` and `upmix_engine.py` next to `theater-route`.
+The engine asks for real-time priority directly, then through rtkit, and logs which it got (`journalctl --user -u theater-upmix | head`), plus a line if hops run slow. Check `pw-top` (ERR column) for xruns. Re-run `scripts/install-autoroute.sh` after pulling: it now installs `set-eq.py`, `upmix.py` and `upmix_engine.py` next to `theater-route`.
 
 Commands: `eq mode auto|film|stereo|bed` (fixed override until `auto`), `eq flavour stereo|bed NAME`, `eq engine on|off`, `eq source` (what mpv reports and how it is classified;
 paste it if detection looks wrong), `eq status` (profile, Chrome patch state, source). With `eq off` nothing is switched or patched.
