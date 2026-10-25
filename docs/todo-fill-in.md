@@ -6,7 +6,7 @@ Search the docs for `TODO(owner)`. Checklist:
 - [x] `systemctl --user cat camilladsp.service`: collected (ExecStart `/usr/local/bin/camilladsp %h/.config/camilladsp/config.yml`); the example unit still needs to be compared with it
 - [x] The exact `mpv-atmos` command: collected (and it is older than the repository copy, see installation.md). There is no `mpv.conf`
 - [ ] Omniphony config: `~/.config/omniphony/config.yaml` contents (build steps are covered by `scripts/object-audio-install.sh`)
-- [x] harletty-bridge and Omniphony install: now `scripts/object-audio-install.sh` (from source). Remaining: run it on the rig and record the versions it prints
+- [x] harletty-bridge and Omniphony install: now `scripts/object-audio-install.sh` (prebuilt releases; only mpv is built). Remaining: run it on the rig and record the versions it prints
 - [ ] `pw-link -o | grep mpv` while Atmos plays and while a 5.1 file plays (see [status.md](status.md))
 - [ ] Z906 sub-level and master-volume reference positions (photo in `docs/img/`)
 - [ ] Exact room dimensions (notes from 2026-10-19 said about 10 x 11 ft; later 10 x 10 ft) and a floor plan with seat and speaker positions

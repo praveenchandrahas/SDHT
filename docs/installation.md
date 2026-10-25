@@ -88,17 +88,17 @@ eq status             # with a film playing
 
 Then follow the reboot test in [runbook.md](runbook.md).
 
-## mpv-object-audio: the from-source player stack (2026-10-25)
+## mpv-object-audio: the Omniphony player stack (2026-10-25)
 
-`scripts/object-audio-install.sh` clones and builds the latest Omniphony engine, harletty-bridge and mpv-omniphony (stable track, mpv 0.41.x with the fork patches) into `~/.local/opt/mpv-object-audio`, installs the `mpv-object-audio` command and the KDE menus, and refuses to install if the bridges or the engine do not load. It is **independent of `mpv-atmos`**: separate mpv binary, engine and bridges, and its own mpv config folder `~/.config/mpv-object-audio` (a one-time copy of `~/.config/mpv`: keys, uosc, the overlay script). The wrapper `scripts/mpv-object-audio` carries the same video settings as `mpv-atmos` (VAAPI, gpu-next on Vulkan, BT.709/BT.1886, peak 60, bt.2390, mitchell with linear downscaling, debanding, 512 MiB demuxer cache).
+`scripts/object-audio-install.sh` installs the latest engine and bridges as **prebuilt releases** (`liborender-<tag>-linux-x86_64.zip` from mgth/Omniphony, `harletty-bridge-<tag>-linux-x86_64.zip` from harletty/harletty-bridge) and builds **only mpv-omniphony from source**, because it publishes no releases (main of mgth/mpv-omniphony, which pins the mpv fork tag: mpv 0.41.x plus the `ad_orender` patches; the build needs no engine). Everything goes into `~/.local/opt/mpv-object-audio`, and the installer refuses to install the command unless the new mpv loads the engine. It is **independent of `mpv-atmos`**: separate mpv binary, engine and bridges, and its own mpv config folder `~/.config/mpv-object-audio` (a one-time copy of `~/.config/mpv`: keys, uosc, the overlay script). The wrapper `scripts/mpv-object-audio` carries the same video settings as `mpv-atmos` (VAAPI, gpu-next on Vulkan, BT.709/BT.1886, peak 60, bt.2390, mitchell with linear downscaling, debanding, 512 MiB demuxer cache).
 
 ```bash
-scripts/object-audio-install.sh deps      # prints the apt line; Rust >= 1.89 must come from rustup
-scripts/object-audio-install.sh           # install or update (a re-run fetches the latest of everything)
+scripts/object-audio-install.sh deps      # prints the apt line (mpv's build dependencies)
+scripts/object-audio-install.sh           # install or update (a re-run takes the latest releases)
 scripts/object-audio-install.sh status
 scripts/object-audio-install.sh remove
 ```
 
-Entry points: `mpv-object-audio FILE` in a terminal; Dolphin right-click submenu "mpv-object-audio" (play, fullscreen, play with log in Konsole, show streams); "Open with" in any KDE file dialog. It is not made the default handler. The DSP hooks (`eq ensure`, `eq prepare`) and the IPC socket are shared with `mpv-atmos` on purpose, so the router and the automatic profile switching work unchanged; `OBJECT_AUDIO_DSP=0` turns them off.
+Entry points: `mpv-object-audio FILE` in a terminal; Dolphin right-click submenu "mpv-object-audio" (play, fullscreen, play with log in Konsole, show streams); "Open with" in any KDE file dialog. It is not made the default handler. The DSP hooks (`eq ensure`, `eq prepare`) and the IPC socket are shared with `mpv-atmos` on purpose, so the router and the automatic profile switching work unchanged; `OBJECT_AUDIO_DSP=0` turns them off. The bridge pairing: the latest engine and the latest bridge release should match (the bridge notes say which Omniphony they require); pin with `OA_OMNIPHONY_TAG` / `OA_BRIDGE_TAG` if they do not.
 
-**Not yet run on the rig** (written and syntax-checked on a machine without the build dependencies). Open questions the first run answers: whether the latest Omniphony main and harletty-bridge main load together (the installer checks and stops if not; fallback `OA_OMNIPHONY_REF=<the bridge's pin it prints>`), whether the latest engine accepts the mpv fork's `ad_orender`, and the bridge count (the installer expects the three family libraries).
+**Not yet run on the rig** (written and syntax-checked on a machine without the build dependencies; the download step needs GitHub's API, which a rate limit can refuse: set `GITHUB_TOKEN`). The first run answers whether the asset names above still match and whether the latest mpv fork loads the latest engine.
