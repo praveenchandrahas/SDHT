@@ -41,7 +41,7 @@ There is **no `mpv.conf`** on the rig. Everything (decoder, VAAPI, gpu-next on V
 
 ### Still TODO(owner)
 
-- Build and install steps for Omniphony and harletty-bridge, with upstream links (the mpv-omniphony build is in [omniphony-debugging.md](omniphony-debugging.md)).
+- Superseded by the from-source installer `scripts/object-audio-install.sh` (below). Still TODO(owner): record the versions it installs after the first real run (`mpv-object-audio --oa-info`) and decide when `mpv-atmos` is retired.
 - Media library mount (decide how much to document).
 
 ## 3. Configure the interface name
@@ -87,3 +87,18 @@ eq status             # with a film playing
 ```
 
 Then follow the reboot test in [runbook.md](runbook.md).
+
+## mpv-object-audio: the from-source player stack (2026-10-25)
+
+`scripts/object-audio-install.sh` clones and builds the latest Omniphony engine, harletty-bridge and mpv-omniphony (stable track, mpv 0.41.x with the fork patches) into `~/.local/opt/mpv-object-audio`, installs the `mpv-object-audio` command and the KDE menus, and refuses to install if the bridges or the engine do not load. It is **independent of `mpv-atmos`**: separate mpv binary, engine and bridges, and its own mpv config folder `~/.config/mpv-object-audio` (a one-time copy of `~/.config/mpv`: keys, uosc, the overlay script). The wrapper `scripts/mpv-object-audio` carries the same video settings as `mpv-atmos` (VAAPI, gpu-next on Vulkan, BT.709/BT.1886, peak 60, bt.2390, mitchell with linear downscaling, debanding, 512 MiB demuxer cache).
+
+```bash
+scripts/object-audio-install.sh deps      # prints the apt line; Rust >= 1.89 must come from rustup
+scripts/object-audio-install.sh           # install or update (a re-run fetches the latest of everything)
+scripts/object-audio-install.sh status
+scripts/object-audio-install.sh remove
+```
+
+Entry points: `mpv-object-audio FILE` in a terminal; Dolphin right-click submenu "mpv-object-audio" (play, fullscreen, play with log in Konsole, show streams); "Open with" in any KDE file dialog. It is not made the default handler. The DSP hooks (`eq ensure`, `eq prepare`) and the IPC socket are shared with `mpv-atmos` on purpose, so the router and the automatic profile switching work unchanged; `OBJECT_AUDIO_DSP=0` turns them off.
+
+**Not yet run on the rig** (written and syntax-checked on a machine without the build dependencies). Open questions the first run answers: whether the latest Omniphony main and harletty-bridge main load together (the installer checks and stops if not; fallback `OA_OMNIPHONY_REF=<the bridge's pin it prints>`), whether the latest engine accepts the mpv fork's `ad_orender`, and the bridge count (the installer expects the three family libraries).
