@@ -49,7 +49,7 @@ F1 title music (opening and loud section), Godzilla, Tenet "freeport" (last 15 s
 boominess and kept the thump; predicted changes matched the recorded changes within about 1-2 dB wherever the
 microphone did not clip.
 
-Limits to remember: tuned for one seat; the loud trailers clip the mic (see [measurement.md](measurement.md));
+Limits to remember: tuned for one seat; the loud trailers clip the mic (see [measurement.md](https://github.com/praveenchandrahas/theater-measurement/blob/main/docs/measurement.md));
 a narrow cut at 72 Hz sits close to the D2 bass note (about 73 Hz), so music may show it (the owner mostly watches films).
 
 ## Alignment (2026-10-21)

@@ -12,6 +12,22 @@ exact versions are still to be filled in, see [Still to fill in](#still-to-fill-
 Room: about 10 x 10 ft, light-controlled and acoustically treated, with no space behind the seat for rear speakers, so **5.1.2 is the
 largest layout used here** (7.1.4 and 5.1.4 are deliberately not used).
 
+## The repositories
+
+The project started as one repository and was split into one repository per sub-project on 2026-10-25 (history preserved in each). This one, **sdht**, is the front door: the build log, documentation, results and graphs.
+
+| Repository | What it is |
+|---|---|
+| **[sdht](https://github.com/praveenchandrahas/sdht)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh`, the figure scripts |
+| **[theater-router](https://github.com/praveenchandrahas/theater-router)** | `eq` / `theater-route` (PipeWire routing) and `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the systemd units, router tests |
+| **[upmix-engine](https://github.com/praveenchandrahas/upmix-engine)** | the stereo and 5.1-bed upmixers (`upmix.py`) and the adaptive ambience engine (`upmix_engine.py`), with their offline test harness |
+| **[mpv-object-audio](https://github.com/praveenchandrahas/mpv-object-audio)** | installer and wrapper for the live Atmos / DTS:X player (Omniphony, harletty-bridge, patched mpv) |
+| **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | background seek-bar thumbnails for an rclone library, and the mpv viewer script |
+| **[theater-measurement](https://github.com/praveenchandrahas/theater-measurement)** | test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison), REW data |
+| **[drift-tracker](https://github.com/praveenchandrahas/drift-tracker)** | measures whether two playback paths (the second sub) drift apart |
+
+Clone them all side by side with `./scripts/clone-all.sh` (they find each other by folder name; `SDHT_WORKSPACE` overrides). In the prose below, a path such as `scripts/set-eq.py` or `tools/sweeptest/` refers to the repository in the table that owns it. Details: [docs/repo-split.md](docs/repo-split.md).
+
 ## Credits
 
 This project is mostly glue and measurement. The hard part, decoding and rendering Atmos objects live on Linux, is the
@@ -28,7 +44,7 @@ work of others, and everything here stands on it:
   [CamillaDSP](https://github.com/HEnquist/camilladsp), [Room EQ Wizard](https://www.roomeqwizard.com), and
   [Cavern](https://github.com/VoidXH/Cavern) (used for offline rendering before the live path existed).
 
-How the Omniphony stack was built and debugged on this machine is in [docs/omniphony-debugging.md](docs/omniphony-debugging.md).
+How the Omniphony stack was built and debugged on this machine is in [docs/omniphony-debugging.md](https://github.com/praveenchandrahas/mpv-object-audio/blob/main/docs/omniphony-debugging.md).
 
 ![System overview, every component](docs/img/system-overview.png)
 
@@ -46,7 +62,7 @@ at higher level. *Dolby Amaze*: Dolby's Atmos demo clip, in which Praveen hears 
 The path of a film, from file to ears:
 
 1. **Library.** Remuxes (TrueHD or DD+ Atmos, DTS-HD MA) on a FUSE-mounted media library.
-2. **Decode and render, live.** [`mpv-atmos`](scripts/mpv-atmos) runs a patched mpv ([mpv-omniphony](https://github.com/mgth/mpv-omniphony)).
+2. **Decode and render, live.** [`mpv-atmos`](https://github.com/praveenchandrahas/mpv-object-audio/tree/main/scripts/mpv-atmos) runs a patched mpv ([mpv-omniphony](https://github.com/mgth/mpv-omniphony)).
    The [harletty-bridge](https://github.com/harletty/harletty-bridge) plugin decodes the Atmos bitstream into PCM plus object metadata,
    and [Omniphony](https://github.com/mgth/Omniphony) renders the objects to the 5.1.2 layout with VBAP, in real time.
    Objects stay objects until the final speaker feeds are computed.
@@ -88,13 +104,13 @@ The full hardware table, channel map and diagrams are in [docs/architecture.md](
 | Oct 23 | Verification sweeps through CamillaDSP: delays confirmed, heights bass-managed and tone-matched, sub range measured, dialogue and reflection kits built |
 | Oct 24 | Reboot test of the standing profile, stereo and 5.1 upmix presets, automatic profile selection, adaptive-ambience prototype |
 
-Every problem met on the way, with cause and fix, is in [docs/omniphony-debugging.md](docs/omniphony-debugging.md).
+Every problem met on the way, with cause and fix, is in [docs/omniphony-debugging.md](https://github.com/praveenchandrahas/mpv-object-audio/blob/main/docs/omniphony-debugging.md).
 
 ### The `mpv-atmos` command
 
-[`scripts/mpv-atmos`](scripts/mpv-atmos) is a reference copy of the wrapper: `--ad=orender` with the engine and bridge paths,
+[`scripts/mpv-atmos`](https://github.com/praveenchandrahas/mpv-object-audio/tree/main/scripts/mpv-atmos) is a reference copy of the wrapper: `--ad=orender` with the engine and bridge paths,
 VAAPI decode, `--vo=gpu-next` on Vulkan, `--target-peak=60 --tone-mapping=bt.2390`, a Mitchell downscaler with linear,
-corrected downscaling, and debanding. [`scripts/mpv-atmos-overlay-off.lua`](scripts/mpv-atmos-overlay-off.lua) switches the
+corrected downscaling, and debanding. [`scripts/mpv-atmos-overlay-off.lua`](https://github.com/praveenchandrahas/mpv-object-audio/blob/main/scripts/mpv-atmos-overlay-off.lua) switches the
 trajectory overlay off at file load. Paths are from Praveen's machine; adjust them.
 
 ## Tuning and automation (the CamillaDSP stage)
@@ -130,7 +146,7 @@ The heights' bass "before" figure is the heights alone with no sub feed (41 dB r
 
 The upmix presets are measured offline only so far, on synthetic test signals. The adaptive ambience engine (`scripts/upmix_engine.py`, used by the stereo upmix by default, with an automatic fall-back to the fixed matrix; not yet run against real PipeWire) separates
 instrument from ambience far better than the fixed side-signal matrix on synthetic harmonic notes, and no better on noise
-([tools/upmixtest](tools/upmixtest/README.md)). The metric is the ambience kept in the surrounds minus the instrument leaking into them, in dB. It says nothing yet about music:
+([tools/upmixtest](https://github.com/praveenchandrahas/upmix-engine/blob/main/upmixtest/README.md)). The metric is the ambience kept in the surrounds minus the instrument leaking into them, in dB. It says nothing yet about music:
 
 ![Adaptive ambience vs fixed matrix](docs/graphs/11_upmix_adaptive_vs_fixed.png)
 
@@ -162,7 +178,7 @@ Claim by claim in [docs/status.md](docs/status.md) (updated 2026-10-24). "Measur
 
 **Open:** a rattle or buzz in loud bass scenes. Praveen hears it as sub-cabinet rattle; steady tones at -14 dBFS do not
 reproduce it, and the Dolby Amaze recording shows no fixed 100 Hz line that would separate cabinet rattle from a room mode. In the hot sub run the recording peaks at the same level on eight tones, which points at a limit in the
-chain that has not been located. Next step is the same kit at a lower level and a different mic position, and at -8 and -3 dBFS ([tools/subtest](tools/subtest/README.md)).
+chain that has not been located. Next step is the same kit at a lower level and a different mic position, and at -8 and -3 dBFS ([tools/subtest](https://github.com/praveenchandrahas/theater-measurement/blob/main/tools/subtest/README.md)).
 
 ## Uncertainty
 
@@ -175,16 +191,14 @@ the raw REW exports in `data/rew/`.
 ## Repository layout
 
 ```
-scripts/     things you run: mpv-atmos (+ overlay-off.lua), theater-route (+ `eq`), install-autoroute.sh, make-default.sh,
-             set-eq.py, upmix.py, route-mpv.sh, rec.sh, tone-test.sh, make-delaytest.py, make-bedtest.py
-tools/       analysis and measurement kits: analyze-delaytest.py, sweeptest/, subtest/, dialoguetest/, reflecttest/,
-             bartest/, upmixtest/, plus the diagram and figure generators (make-architecture-diagram.py,
-             make-system-overview.py, make-graphs.py, make-verification-figures.py)
-configs/     example generated CamillaDSP config, systemd unit files
-data/        small REW measurement exports (see data/README.md)
-tests/       tests/run.sh: router + config tests, no hardware needed
-docs/        the documentation (start with architecture.md and runbook.md); docs/graphs/ holds every graph
+docs/        the documentation (start with architecture.md and runbook.md); docs/graphs/ holds every graph, docs/img the diagrams
+scripts/     preflight (read-only health report), collect-versions.sh, clone-all.sh, test-all.sh
+tools/       the figure and diagram generators: make-graphs.py, make-recording-graphs.py, make-verification-figures.py,
+             make-architecture-diagram.py, make-system-overview.py, build-writeup-page.py
+             (they read the other repositories: set-eq.py from theater-router, REW data and analysers from theater-measurement)
 ```
+
+Everything else (router, upmix engine, player installer, thumbnails, measurement kits) is in the repositories listed above.
 
 ## Quick start on a new machine
 
@@ -193,24 +207,26 @@ Two steps cover the software. Start from Kubuntu 24.04 (or another Ubuntu 24.04 
 **1. The player: Omniphony, harletty-bridge and mpv-omniphony, as the `mpv-object-audio` command.**
 
 ```bash
-git clone https://github.com/praveenchandrahas/SDHT && cd SDHT
+git clone https://github.com/praveenchandrahas/sdht && ./sdht/scripts/clone-all.sh     # all repositories, side by side
+cd mpv-object-audio
 ./scripts/object-audio-install.sh deps      # prints one apt line (mpv's build dependencies); run what it prints
 ./scripts/object-audio-install.sh           # the engine and the decoder bridges are downloaded as prebuilt releases;
                                             # mpv-omniphony has no releases, so mpv is built from source (several minutes)
 mpv-object-audio film.mkv                   # or right-click a film in Dolphin -> mpv-object-audio
 ```
 
-Everything goes into `~/.local/opt/mpv-object-audio`; the installer stops, and installs no command, unless the new mpv loads the engine. Re-running it updates to the latest releases. [`mpv-object-audio`](scripts/mpv-object-audio) carries the video settings described under [The `mpv-atmos` command](#the-mpv-atmos-command) and is independent of `mpv-atmos`. The installer also adds a Dolphin right-click submenu (play, fullscreen, play with log, show streams) and an "Open with" entry. `scripts/object-audio-install.sh status` and `remove` do what they say. Details and caveats: [docs/installation.md](docs/installation.md#mpv-object-audio-the-omniphony-player-stack-2026-10-25).
+Everything goes into `~/.local/opt/mpv-object-audio`; the installer stops, and installs no command, unless the new mpv loads the engine. Re-running it updates to the latest releases. [`mpv-object-audio`](https://github.com/praveenchandrahas/mpv-object-audio/tree/main/scripts/mpv-object-audio) carries the video settings described under [The `mpv-atmos` command](#the-mpv-atmos-command) and is independent of `mpv-atmos`. The installer also adds a Dolphin right-click submenu (play, fullscreen, play with log, show streams) and an "Open with" entry. `scripts/object-audio-install.sh status` and `remove` do what they say. Details and caveats: [docs/installation.md](docs/installation.md#mpv-object-audio-the-omniphony-player-stack-2026-10-25).
 
-**Optional: seek-bar thumbnails for an rclone library.** [`tools/seekthumbs`](tools/seekthumbs) builds small preview thumbnails for every film in the background (conservative with cloud API limits, at most 10 MB per 2 hours, kept in a local folder) and a replacement `thumbfast.lua` shows them on the mpv seek bar without opening the film a second time. Setup and caveats: [docs/seekthumbs.md](docs/seekthumbs.md).
+**Optional: seek-bar thumbnails for an rclone library.** [seekthumbs](https://github.com/praveenchandrahas/seekthumbs) builds small preview thumbnails for every film in the background (conservative with cloud API limits, at most 10 MB per 2 hours, kept in a local folder) and a replacement `thumbfast.lua` shows them on the mpv seek bar without opening the film a second time. Setup and caveats are in its README.
 
 **2. The DSP and routing: CamillaDSP profile, router and the `eq` command.**
 
 ```bash
+cd ../theater-router                         # needs the upmix-engine repository beside it (clone-all.sh did that)
 ./scripts/make-default.sh                   # writes and loads the standing profile, installs the router and `eq`, enables the services
 ```
 
-Then run `./scripts/preflight` (read-only health report) before the first film. Speaker layout, Omniphony's own configuration and the room-specific numbers (delays, trims, EQ) are the owner's and must be re-measured for any other room; see [docs/runbook.md](docs/runbook.md).
+Then run `../sdht/scripts/preflight` (read-only health report) before the first film. Speaker layout, Omniphony's own configuration and the room-specific numbers (delays, trims, EQ) are the owner's and must be re-measured for any other room; see [docs/runbook.md](docs/runbook.md).
 
 *Status:* step 1 was run on the rig on 2026-10-25 (engine v0.7.0 and bridges v0.9.0 loaded; an Atmos TrueHD clip and a DTS:X clip played and were heard). Not yet checked with the DAC connected: routing through CamillaDSP, and the level against `mpv-atmos` (the new engine applies a -8 dB dialogue normalisation on the Atmos clip); see [docs/todo-fill-in.md](docs/todo-fill-in.md) and `scripts/preflight playing` / `compare`.
 

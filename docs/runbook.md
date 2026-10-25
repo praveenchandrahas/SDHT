@@ -125,5 +125,5 @@ file, `mpv.conf`, and the Omniphony configuration. TODO(owner): paths of the las
 ## Re-tuning checklist
 
 Redo measurements if any of these change: speaker positions, listening seat, Z906 sub level or placement, room furniture,
-USB interface, or CamillaDSP chunk size. Method: [measurement.md](measurement.md). Order of work: bass voicing,
+USB interface, or CamillaDSP chunk size. Method: [measurement.md](https://github.com/praveenchandrahas/theater-measurement/blob/main/docs/measurement.md). Order of work: bass voicing,
 then delays, then levels, then tone, then heights.

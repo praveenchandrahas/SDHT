@@ -118,13 +118,22 @@ E
 
 sec "installed scripts match the repository"
 SD="${SDHT:-$HOME/SDHT}"; [ -d "$SD/scripts" ] || SD="$HOME/sdht"
-if [ -d "$SD/scripts" ]; then
+WS="${SDHT_WORKSPACE:-$(dirname "$SD")}"      # the project's repositories are cloned side by side (scripts/clone-all.sh)
+repo_file() {                                  # installed script name -> its file in whichever repository owns it
+    case "$1" in
+        theater-route|set-eq.py)   echo "$WS/theater-router/scripts/$1" ;;
+        upmix.py|upmix_engine.py)  echo "$WS/upmix-engine/$1" ;;
+        mpv-atmos|mpv-object-audio) echo "$WS/mpv-object-audio/scripts/$1" ;;
+    esac
+}
+if [ -d "$WS/theater-router" ] || [ -d "$WS/mpv-object-audio" ]; then
     for f in theater-route set-eq.py upmix.py upmix_engine.py mpv-atmos mpv-object-audio; do
-        i="$HOME/.local/bin/$f"
-        [ -e "$i" ] && { cmp -s "$i" "$SD/scripts/$f" && ok "$f identical to the repo" || warn "$f differs from the repo (re-run install-autoroute.sh?)"; } || warn "$f not installed in ~/.local/bin"
+        i="$HOME/.local/bin/$f"; r=$(repo_file "$f")
+        [ -f "$r" ] || { warn "$f: repository file not found ($r)"; continue; }
+        [ -e "$i" ] && { cmp -s "$i" "$r" && ok "$f identical to the repo" || warn "$f differs from the repo (re-run install-autoroute.sh?)"; } || warn "$f not installed in ~/.local/bin"
     done
 else
-    warn "repository not found (set SDHT=/path)"
+    warn "sibling repositories not found next to $SD (run scripts/clone-all.sh, or set SDHT_WORKSPACE)"
 fi
 
 sec "mpv-object-audio (Omniphony player stack)"
@@ -182,7 +191,7 @@ else
     warn "no $CFG yet (see docs/seekthumbs.md)"
 fi
 systemctl --user is-active seekthumbs.service 2>&1 | sed 's/^/   seekthumbs.service: /'
-echo "-- seekthumbs.py status:"; [ -f "$SD/tools/seekthumbs/seekthumbs.py" ] && python3 "$SD/tools/seekthumbs/seekthumbs.py" status 2>&1 | head -8 | sed 's/^/   /'
+echo "-- seekthumbs.py status:"; [ -f "$WS/seekthumbs/seekthumbs.py" ] && python3 "$WS/seekthumbs/seekthumbs.py" status 2>&1 | head -8 | sed 's/^/   /'
 
 sec "services"
 for u in pipewire wireplumber pipewire-pulse theater-router theater-upmix; do echo "$u: $(systemctl --user is-active $u 2>&1)"; done
@@ -232,12 +241,12 @@ fi
 
 if [ "$1" = "--tests" ]; then
     sec "repository tests"
-    if [ -f "$SD/tests/run.sh" ]; then
-        out=$(bash "$SD/tests/run.sh" 2>&1)
+    if [ -f "$SD/scripts/test-all.sh" ]; then
+        out=$(bash "$SD/scripts/test-all.sh" 2>&1)
         echo "PASS lines: $(echo "$out" | grep -c '^PASS')"
-        echo "$out" | grep -E "^FAIL|Traceback" | head -20
+        echo "$out" | grep -E "^FAIL|Traceback|^==|not found" | head -30
     else
-        warn "tests/run.sh not found"
+        warn "scripts/test-all.sh not found"
     fi
 fi
 echo; echo "report saved to $REPORT"
