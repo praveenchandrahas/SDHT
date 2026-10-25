@@ -202,6 +202,8 @@ mpv-object-audio film.mkv                   # or right-click a film in Dolphin -
 
 Everything goes into `~/.local/opt/mpv-object-audio`; the installer stops, and installs no command, unless the new mpv loads the engine. Re-running it updates to the latest releases. [`mpv-object-audio`](scripts/mpv-object-audio) carries the video settings described under [The `mpv-atmos` command](#the-mpv-atmos-command) and is independent of `mpv-atmos`. The installer also adds a Dolphin right-click submenu (play, fullscreen, play with log, show streams) and an "Open with" entry. `scripts/object-audio-install.sh status` and `remove` do what they say. Details and caveats: [docs/installation.md](docs/installation.md#mpv-object-audio-the-omniphony-player-stack-2026-10-25).
 
+**Optional: seek-bar thumbnails for an rclone library.** [`tools/seekthumbs`](tools/seekthumbs) builds small preview thumbnails for every film in the background (conservative with cloud API limits, at most 10 MB per 2 hours, kept in a local folder) and a replacement `thumbfast.lua` shows them on the mpv seek bar without opening the film a second time. Setup and caveats: [docs/seekthumbs.md](docs/seekthumbs.md).
+
 **2. The DSP and routing: CamillaDSP profile, router and the `eq` command.**
 
 ```bash

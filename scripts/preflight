@@ -148,6 +148,42 @@ echo "-- the engine's shared config (both players read it): $HOME/.config/omniph
 [ -f "$HOME/.config/omniphony/config.yaml" ] && { stat -c '   %y  %s bytes' "$HOME/.config/omniphony/config.yaml"; grep -E "bridge_path|osc:|layout" "$HOME/.config/omniphony/config.yaml" | head -6 | sed 's/^/   /'; } || echo "   (none: engine defaults apply)"
 echo "-- run 'preflight playing' in a second terminal while a film plays, and 'preflight compare FILE' to diff the two players"
 
+sec "mpv scripts and the library (for the seek-thumbnail viewer)"
+for d in "$HOME/.config/mpv" "$HOME/.config/mpv-object-audio"; do
+    echo "-- $d"
+    if [ -d "$d" ]; then
+        echo "   scripts:"; ls -1 "$d/scripts" 2>/dev/null | sed 's/^/     /'
+        echo "   script-opts:"; ls -1 "$d/script-opts" 2>/dev/null | sed 's/^/     /'
+        for f in "$d"/scripts/uosc* "$d"/scripts/thumbfast*; do
+            [ -e "$f" ] || continue
+            v=$(grep -rhoiE "(version|VERSION)[ =:\"']+[0-9][0-9.]+" "$f" 2>/dev/null | head -1)
+            echo "   $(basename "$f") ${v:+($v)}"
+        done
+        [ -f "$d/mpv.conf" ] && { echo "   mpv.conf:"; grep -v '^#' "$d/mpv.conf" | grep -v '^$' | sed 's/^/     /'; }
+    else
+        echo "   (no such folder)"
+    fi
+done
+echo "-- rclone mount(s) (flags decide how many bytes one seek reads):"
+ps -eo args 2>/dev/null | grep -E "[r]clone .*(mount|nfsmount|serve)" | sed 's/^/   /' | sed -E 's/(pass|password|token|secret)[= ][^ ]+/\1=***/Ig'
+mount 2>/dev/null | grep -i rclone | sed 's/^/   /'
+echo "-- seekthumbs:"
+CFG="$HOME/.config/seekthumbs/config.ini"
+if [ -f "$CFG" ]; then
+    sed 's/^/   /' "$CFG"
+    LIBP=$(awk -F'[=: ]+' '/^library/{print $2}' "$CFG"); STOREP=$(awk -F'[=: ]+' '/^store/{print $2}' "$CFG")
+    LIBP="${LIBP/#\~/$HOME}"; STOREP="${STOREP/#\~/$HOME}"
+    [ -n "$LIBP" ] && { [ -d "$LIBP" ] && ok "library folder exists: $LIBP" || warn "library folder not found: $LIBP"; }
+    if [ -n "$STOREP" ] && [ -d "$STOREP" ]; then
+        ok "store: $(du -sh "$STOREP" 2>/dev/null | cut -f1) in $(find "$STOREP" -name index.json 2>/dev/null | wc -l) entries"
+        df -h "$STOREP" | tail -1 | sed 's/^/   /'
+    fi
+else
+    warn "no $CFG yet (see docs/seekthumbs.md)"
+fi
+systemctl --user is-active seekthumbs.service 2>&1 | sed 's/^/   seekthumbs.service: /'
+echo "-- seekthumbs.py status:"; [ -f "$SD/tools/seekthumbs/seekthumbs.py" ] && python3 "$SD/tools/seekthumbs/seekthumbs.py" status 2>&1 | head -8 | sed 's/^/   /'
+
 sec "services"
 for u in pipewire wireplumber pipewire-pulse theater-router theater-upmix; do echo "$u: $(systemctl --user is-active $u 2>&1)"; done
 systemctl --user list-units --type=service --no-legend 2>/dev/null | grep -i camilla
