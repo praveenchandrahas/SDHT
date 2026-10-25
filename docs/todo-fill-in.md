@@ -2,6 +2,8 @@
 
 Search the docs for `TODO(owner)`. Checklist:
 
+- [ ] **First: run `scripts/object-audio-install.sh deps`, then `scripts/object-audio-install.sh`, then `mpv-object-audio --oa-info` and play one Atmos and one 5.1 film with it** (written 2026-10-25, never run; engine and bridges are prebuilt releases, only mpv is built). Record the versions it prints (`~/.local/opt/mpv-object-audio/VERSIONS`), check the Dolphin right-click menu and `eq source` while it plays, and send the tail of `~/.local/opt/mpv-object-audio/build.log` if a step fails. Then update the "not yet run" notes in the [README](../README.md#quick-start-on-a-new-machine) and [installation.md](installation.md)
+
 - [x] Laptop model, OS and kernel version; PipeWire and WirePlumber versions: recorded 2026-10-24 in [installation.md](installation.md#2-player-stack)
 - [x] `systemctl --user cat camilladsp.service`: collected (ExecStart `/usr/local/bin/camilladsp %h/.config/camilladsp/config.yml`); the example unit still needs to be compared with it
 - [x] The exact `mpv-atmos` command: collected (and it is older than the repository copy, see installation.md). There is no `mpv.conf`

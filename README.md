@@ -188,11 +188,29 @@ docs/        the documentation (start with architecture.md and runbook.md); docs
 
 ## Quick start on a new machine
 
-Prerequisites, built first and not covered by the command below: the patched mpv-omniphony, Omniphony, harletty-bridge, PipeWire, CamillaDSP and the 7.1 USB interface (see [docs/installation.md](docs/installation.md) and [docs/omniphony-debugging.md](docs/omniphony-debugging.md)). Then one command does the rest (applies the standing profile, installs the router and the `eq` command, enables the services):
+Two steps cover the software. Start from Kubuntu 24.04 (or another Ubuntu 24.04 derivative) with PipeWire running, the 7.1 USB interface plugged in, and [CamillaDSP](https://github.com/HEnquist/camilladsp/releases) installed as `/usr/local/bin/camilladsp` (not scripted yet; see [docs/installation.md](docs/installation.md)).
+
+**1. The player: Omniphony, harletty-bridge and mpv-omniphony, as the `mpv-object-audio` command.**
 
 ```bash
-./scripts/make-default.sh                        # write + load the standing profile
+git clone https://github.com/praveenchandrahas/SDHT && cd SDHT
+./scripts/object-audio-install.sh deps      # prints one apt line (mpv's build dependencies); run what it prints
+./scripts/object-audio-install.sh           # the engine and the decoder bridges are downloaded as prebuilt releases;
+                                            # mpv-omniphony has no releases, so mpv is built from source (several minutes)
+mpv-object-audio film.mkv                   # or right-click a film in Dolphin -> mpv-object-audio
 ```
+
+Everything goes into `~/.local/opt/mpv-object-audio`; the installer stops, and installs no command, unless the new mpv loads the engine. Re-running it updates to the latest releases. [`mpv-object-audio`](scripts/mpv-object-audio) carries the video settings described under [The `mpv-atmos` command](#the-mpv-atmos-command) and is independent of `mpv-atmos`. The installer also adds a Dolphin right-click submenu (play, fullscreen, play with log, show streams) and an "Open with" entry. `scripts/object-audio-install.sh status` and `remove` do what they say. Details and caveats: [docs/installation.md](docs/installation.md#mpv-object-audio-the-omniphony-player-stack-2026-10-25).
+
+**2. The DSP and routing: CamillaDSP profile, router and the `eq` command.**
+
+```bash
+./scripts/make-default.sh                   # writes and loads the standing profile, installs the router and `eq`, enables the services
+```
+
+Then run `./scripts/preflight` (read-only health report) before the first film. Speaker layout, Omniphony's own configuration and the room-specific numbers (delays, trims, EQ) are the owner's and must be re-measured for any other room; see [docs/runbook.md](docs/runbook.md).
+
+*Status:* step 1 has been written and syntax-checked but **not yet run on the rig**; the first run is on the [to-do list](docs/todo-fill-in.md).
 
 ## Still to fill in
 
