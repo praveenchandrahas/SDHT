@@ -21,7 +21,7 @@ common practice or capability that is missing.
 | 6 | Bass integration of the existing Z906 sub | **Behind** | Own data: sub arrives 6 to 7 ms after FL, group delay near 15 ms, not compensated; sub alignment is table stakes in sub threads |
 | 7 | Second sub and clock handling (T670 sub, drift tracker, no optimiser) | **Plan only.** Drift tracker has no precedent I could find; the missing optimiser is the standard approach | MSO and Dirac Live Bass Control are the norm; no published drift-tracking of a soundbar sub found; the tracker is untested on the rig |
 | 8 | Stereo and 5.1 upmix (own adaptive ambience engine) | **Advanced hobbyist prototype**, unvalidated | Same architecture family as published and commercial upmixers; evidence is synthetic tests only, no comparison with Dolby Surround, Neural:X or Auro-Matic |
-| 9 | Video (mpv gpu-next, tone mapping, BT.1886, 60-nit target) | **Standard to advanced hobbyist** on Linux; **behind** the madVR reference; uncalibrated | Settings are sensible and fully scripted; no instrument-based calibration, DV FEL not decoded, libplacebo 6.338 vs current 7.360 |
+| 9 | Video (mpv gpu-next, tone mapping, BT.1886, 60-nit target) | **Standard to advanced hobbyist** on Linux; **behind** the madVR reference only on instrument-based calibration | Settings are sensible, fully scripted and the 60-nit peak was tested by the owner (by eye, not by instrument); mpv also tone-maps per frame (`hdr-compute-peak`, whether active in the wrapper is unconfirmed). Gaps: no meter-based calibration, DV FEL not decoded, libplacebo 6.338 vs current 7.360 |
 | 10 | Audio routing and control plane (PipeWire, CamillaDSP, router, profile switching) | **Advanced hobbyist** | Working make-before-break routing and per-stream profile switching; peers report struggling with basic PipeWire-CamillaDSP wiring. Most of it is tested in simulation only |
 | 11 | Currency of the software versions | **Behind** | PipeWire 1.0.5 (1.6.0 released 2026-02-19), libplacebo 6.338.2, Omniphony 0.3.0 vs 0.7.0 |
 
@@ -170,7 +170,7 @@ The 60-nit target "came from measuring the projector's real output" `[A]`; no co
 - Instrument-based calibration on Linux is ArgyllCMS/DisplayCAL to a 3D LUT or ICC profile, which mpv can consume; I did not confirm mpv's LUT option names this session (from memory `--lut` and `--icc-profile`) `[unverified]`. A DisplayCAL forum post (2021) shows people pairing madVR dynamic tone mapping with a Rec.709 3D LUT on SDR projectors `[V]`.
 - libplacebo: current tag seen is v7.360.1 (v7.360.0 listed as eight months old on a release aggregator); the rig uses 6.338.2 `[V]`.
 
-**Where the rig sits.** Everything in the wrapper is a defensible, scripted setup, ahead of default mpv. Without a meter, the BT.1886 target and 60-nit peak are estimates, so the
+**Where the rig sits.** Everything in the wrapper is a defensible, scripted setup, ahead of default mpv. The 60-nit peak was tested by the owner (corrected 2026-10-25; an earlier draft called it a guess), and mpv computes the HDR peak per frame, so the tone-mapping method is comparable in kind to madVR's. Without a meter, though, the BT.1886 target and the display calibration are not instrument-verified, so the
 picture is neither verified nor frontier. Projector black level matters for BT.1886 and for a grey-cloud lamp issue the repo already notes `[V]`. Rate: **standard to advanced hobbyist** on Linux; **behind** the madVR reference. Not where this user's priorities lie.
 
 ### 3.10 Linux audio routing and control plane
