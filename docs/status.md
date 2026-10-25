@@ -18,6 +18,18 @@ Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording o
 | Dialogue is clear and anchored to the screen | Praveen: dialogue is fine. `tools/dialoguetest/` run in the room on 2026-10-24 (dlg1.wav): STI 0.79-0.83, dialogue 13-18 dB above the noise, phantom centre 0.81 vs real 0.79, FC flat to 1.3 dB rms | Measured and owner-verified |
 | First-reflection panels (FL, FC, FR, heights) work | `tools/reflecttest/` on sweep run 2 (panels in place, no baseline): FC and FR OK against ITU-R BS.1116 (every reflection 10 dB under the direct sound); FL one reflection at 5.1 ms, -8 dB; both heights a reflection near -1 dB at 3.6-3.8 ms. A/B with panels covered not yet done | Measured (state), **effect untested** |
 
+## Order of work (2026-10-25)
+
+**Now, in this order** (each is quick and tells us what is actually broken):
+1. `scripts/preflight` and the reboot test with the USB DAC connected (checks 0-1 below).
+2. The bass-rattle hot run ([measurement.md](measurement.md); the owner's cabinet diagnosis is recorded above).
+3. Vantec checks: whether the optical input and a second digital stream work alongside the 7.1 outputs (`preflight` lists the profiles and sources; `preflight capture SOURCE` is the Fire Stick decode test).
+4. Nearfield sweeps of the spare HW-T670 soundbar and its sub (usable band, crossover, distortion), only once 1-3 are done.
+
+**Later**: the second-sub feed (band-limited to about 50-100 Hz; the apartment rules out the JBL; clock drift is checked with `tools/drifttest/`), upmix flavours by ear (checks 6-8), Stremio via an M3U handler for `mpv-atmos` (`eq prepare` must cope with a playlist or URL).
+
+**Parked, no cost to waiting**: 5.1 fly-over detector, SDHT Calibrate (one-command measurement to filters), planetarium sound design (sky-window test on the ceiling comes first), projector automation (RS-232 or IR, lamp-hour log), per-film memory of upmix choices.
+
 ## Checks still to do
 
 0. **Run `scripts/preflight` at the rig** (USB DAC connected, ideally after a fresh boot) and send the report. It is read-only: it checks tools, services, the DAC's profiles and inputs, links, xruns, real-time priority and the live mpv options. `preflight --tests` adds the repository tests; `preflight capture SOURCE` is the Fire Stick optical-in decode test.
