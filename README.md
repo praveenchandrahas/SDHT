@@ -210,7 +210,7 @@ Everything goes into `~/.local/opt/mpv-object-audio`; the installer stops, and i
 
 Then run `./scripts/preflight` (read-only health report) before the first film. Speaker layout, Omniphony's own configuration and the room-specific numbers (delays, trims, EQ) are the owner's and must be re-measured for any other room; see [docs/runbook.md](docs/runbook.md).
 
-*Status:* step 1 has been written and syntax-checked but **not yet run on the rig**; the first run is on the [to-do list](docs/todo-fill-in.md).
+*Status:* step 1 was run on the rig on 2026-10-25 (engine v0.7.0 and bridges v0.9.0 loaded; an Atmos TrueHD clip and a DTS:X clip played and were heard). Not yet checked with the DAC connected: routing through CamillaDSP, and the level against `mpv-atmos` (the new engine applies a -8 dB dialogue normalisation on the Atmos clip); see [docs/todo-fill-in.md](docs/todo-fill-in.md) and `scripts/preflight playing` / `compare`.
 
 ## Still to fill in
 

@@ -6,12 +6,75 @@
 #   preflight --tests             also run the repository's test suite (needs the repo; set SDHT=/path/to/repo if it is not ~/SDHT)
 #   preflight capture SOURCE [S]  record S seconds (default 30) of a digital-input source and try to decode it as Dolby Digital
 #                                 (the Fire Stick optical-in test). SOURCE is a name from: pactl list short sources
+#   preflight playing             run in a second terminal WHILE mpv-object-audio (or mpv-atmos) is playing a film: router state, what the
+#                                 stream is classified as, mpv's port names and whether they are linked into CamillaDSP, mpv's live audio
+#                                 parameters. Read-only; saved to ~/theater-playing-<time>.txt
+#   preflight compare FILE        NOT read-only (it runs both players for 12 s each, muted, and the router may switch the profile for FILE):
+#                                 mpv-atmos against mpv-object-audio on the same file, and a diff of the engine lines that matter
+#                                 (engine version, speaker layout, room ratios, dialogue normalisation, master gain, channel routing)
 USB="${THEATER_USB:-alsa_output.usb-0d8c_USB_Sound_Device-00.analog-surround-71}"
 have() { command -v "$1" >/dev/null 2>&1; }
 run() { echo "\$ $*"; timeout "${T:-10}" "$@" 2>&1 | head -"${N:-40}"; }
 sec() { echo; echo "== $1 =="; }
 ok() { echo "OK    $*"; }
 warn() { echo "WARN  $*"; }
+
+if [ "$1" = playing ]; then
+    REPORT="$HOME/theater-playing-$(date +%Y%m%d-%H%M%S).txt"
+    exec > >(tee "$REPORT") 2>&1
+    echo "theater preflight, playing $(date -Is)"
+    sec "router and profile"
+    have eq && { N=30 run eq status; echo "-- classification:"; N=12 run eq source; } || warn "eq not installed"
+    sec "mpv ports and links"
+    ports=$(pw-link -o 2>/dev/null | grep -E '^ *mpv:output_' | sed 's/^ *//')
+    if [ -z "$ports" ]; then
+        warn "no mpv output ports: is a film playing, and is it mpv?"
+    else
+        echo "$ports"
+        n=$(echo "$ports" | wc -l); good=$(echo "$ports" | grep -c -E 'output_(FL|FR|RL|RR|FC|LFE|SL|SR)$')
+        [ "$good" -eq "$n" ] && ok "all $n mpv ports carry names the router knows (FL FR RL RR FC LFE SL SR)" \
+            || warn "$((n-good)) of $n mpv ports have other names (AUX0.. means mpv gave PipeWire no channel map); the router matches FL FR RL RR FC LFE SL SR and will skip the others"
+        echo "-- where they go:"
+        pw-link -l 2>/dev/null | awk '/^ *mpv:output_/{p=$1; next} /^ *\|->/{ if (p!="") print "  " p "  " $0 } /^[^ |]/{p=""}' | head -20
+        cam=$(pw-link -l 2>/dev/null | grep -A1 -E '^ *mpv:output_' | grep -c 'camilladsp-capture')
+        usb=$(pw-link -l 2>/dev/null | grep -A1 -E '^ *mpv:output_' | grep -c "$USB")
+        echo "links from mpv into CamillaDSP: $cam;  straight into the USB interface: $usb"
+        [ "$cam" -gt 0 ] && [ "$usb" -eq 0 ] && ok "mpv goes through CamillaDSP" || { [ "$cam" -eq 0 ] && warn "mpv is NOT linked into CamillaDSP (EQ, delays and trims are not applied)"; }
+    fi
+    sec "mpv live audio parameters (IPC socket)"
+    S="${THEATER_MPV_SOCK:-${XDG_RUNTIME_DIR:-/tmp}/theater-mpv.sock}"
+    if [ -S "$S" ] && have socat; then
+        for p in current-ao audio-codec-name audio-params audio-out-params audio-delay pause time-pos; do
+            echo -n "$p = "; echo "{\"command\":[\"get_property\",\"$p\"]}" | socat - "$S" 2>/dev/null | head -1
+        done
+    else
+        warn "no mpv IPC socket at $S (or socat missing)"
+    fi
+    sec "graph health"
+    have pw-top && { T=8 N=30 run pw-top -b -n 2; }
+    echo; echo "report saved to $REPORT"
+    exit 0
+fi
+
+if [ "$1" = compare ]; then
+    F="$2"; [ -f "$F" ] || { echo "usage: preflight compare FILE   (a film file, ideally the Atmos clip)"; exit 1; }
+    OUT=$(mktemp -d /tmp/preflight-compare-XXXXXX)
+    KEY='orender: loaded|Speaker layout|Room ratio|Dialog normalization|Master gain|Label to speaker|VBAP render|Channel routing|Spread range|Crossover band|AO:'
+    for pl in mpv-atmos mpv-object-audio; do
+        if have "$pl"; then
+            echo "running $pl for 12 s on: $F"
+            timeout 40 "$pl" --ao=null --vo=null --length=12 "$F" </dev/null > "$OUT/$pl.log" 2>&1
+            grep -E "$KEY" "$OUT/$pl.log" | sed -E 's/^\[[0-9T:.Z-]+ //' | sed -E 's/ \(built [^)]*\)//' > "$OUT/$pl.key"
+            echo "-- $pl: $(wc -l < "$OUT/$pl.key") key lines"
+        else
+            warn "$pl not installed"; : > "$OUT/$pl.key"
+        fi
+    done
+    echo; echo "== lines only in mpv-atmos (<) or only in mpv-object-audio (>) =="
+    diff "$OUT/mpv-atmos.key" "$OUT/mpv-object-audio.key" || true
+    echo; echo "(full logs: $OUT/*.log). A difference in 'Dialog normalization' or 'Master gain' means the two players play at different levels."
+    exit 0
+fi
 
 if [ "$1" = capture ]; then
     SRC="$2"; SECS="${3:-30}"
@@ -56,13 +119,34 @@ E
 sec "installed scripts match the repository"
 SD="${SDHT:-$HOME/SDHT}"; [ -d "$SD/scripts" ] || SD="$HOME/sdht"
 if [ -d "$SD/scripts" ]; then
-    for f in theater-route set-eq.py upmix.py upmix_engine.py mpv-atmos; do
+    for f in theater-route set-eq.py upmix.py upmix_engine.py mpv-atmos mpv-object-audio; do
         i="$HOME/.local/bin/$f"
         [ -e "$i" ] && { cmp -s "$i" "$SD/scripts/$f" && ok "$f identical to the repo" || warn "$f differs from the repo (re-run install-autoroute.sh?)"; } || warn "$f not installed in ~/.local/bin"
     done
 else
     warn "repository not found (set SDHT=/path)"
 fi
+
+sec "mpv-object-audio (Omniphony player stack)"
+OA="${OA_HOME:-$HOME/.local/opt/mpv-object-audio}"
+if [ -x "$OA/bin/mpv" ]; then
+    ok "installed in $OA"
+    [ -f "$OA/VERSIONS" ] && sed 's/^/      /' "$OA/VERSIONS"
+    for f in "$OA/bin/mpv" "$OA/lib/liborender.so.0" "$OA/lib/libharletty_dolby_bridge.so" "$OA/lib/libharletty_dts_bridge.so" "$OA/lib/libharletty_iamf_bridge.so"; do
+        [ -e "$f" ] && ok "$(basename "$f")" || warn "$f missing"
+    done
+    have mpv-object-audio && { mpv-object-audio --oa-check 2>&1 | head -4; } || warn "mpv-object-audio is not on PATH (~/.local/bin)"
+    [ -f "$HOME/.config/mpv-object-audio/mpv.conf" ] && ok "own mpv config folder ~/.config/mpv-object-audio" || warn "no ~/.config/mpv-object-audio"
+else
+    warn "mpv-object-audio not installed (scripts/object-audio-install.sh)"
+fi
+if [ -f "$HOME/.local/bin/theater-route" ]; then
+    grep -q "def cmd_prepare" "$HOME/.local/bin/theater-route" && ok "installed router knows 'eq prepare' (profile chosen before playback)" \
+        || warn "installed router is older than the repository's (no 'eq prepare'): re-run install-autoroute.sh"
+fi
+echo "-- the engine's shared config (both players read it): $HOME/.config/omniphony/config.yaml"
+[ -f "$HOME/.config/omniphony/config.yaml" ] && { stat -c '   %y  %s bytes' "$HOME/.config/omniphony/config.yaml"; grep -E "bridge_path|osc:|layout" "$HOME/.config/omniphony/config.yaml" | head -6 | sed 's/^/   /'; } || echo "   (none: engine defaults apply)"
+echo "-- run 'preflight playing' in a second terminal while a film plays, and 'preflight compare FILE' to diff the two players"
 
 sec "services"
 for u in pipewire wireplumber pipewire-pulse theater-router theater-upmix; do echo "$u: $(systemctl --user is-active $u 2>&1)"; done

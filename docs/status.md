@@ -1,6 +1,6 @@
 # Status: what is verified and what is not
 
-Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording or by the owner's listening on real material.
+Updated 2026-10-25. "Verified" means measured **and** confirmed by a recording or by the owner's listening on real material.
 
 | Claim | Evidence | Level |
 |-------|----------|-------|
@@ -11,6 +11,8 @@ Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording o
 | Heights are bass-managed into the sub and tone-matched to the bed | Sweep run 2 with the profile on: heights + sub within 2.6/2.7 dB rms of the bed over 40-400 Hz (was 41 dB for the heights alone, per bin; about 27 dB with 1/6-octave smoothing); tone deviation 3.1/3.5 dB rms (was 4.5/4.1); heights ran 2-3 dB hot with the first trim, lowered to +1.0 dB (not re-measured) | Measured |
 | Sub range | Sweeps at 3 levels: clean to about 40 Hz, usable 36 Hz, audible but 15%+ distortion at 25-31 Hz, nothing usable under 22 Hz; no compression | Measured |
 | A rattle/buzz in loud bass scenes | Praveen: it is the sub cabinet rattling at particular frequency/amplitude combinations (heard in the room). Not reproduced by steady tones at -14 dBFS (6-12 dB quieter than the film's bass). Re-analysis of the Amaze recording (fig 18) shows bass hits at 35-65 Hz and no 100 Hz line that stays put across hits, so the clip does not locate the buzz. In the hot run (fig 17) eight tones from 31.5-71 Hz peak at the same recorded level, which points at a limit in the chain; unresolved. Next: the same tone kit at -8/-3 dBFS with hand-on-cabinet checks | Open |
+| `mpv-object-audio` (new player stack: engine v0.7.0, bridges v0.9.0, mpv-omniphony main) installs and plays Atmos and DTS:X | 2026-10-25 on the laptop, Vantec **not** connected: installer finished, the new mpv loaded liborender ABI 0.12 0.7.0; the three v0.9.0 bridges (bridge_api 0.6.0, built against Omniphony 55af2c5) loaded and were accepted; the Dolby Atmos TrueHD clip "Audiosphere" (16 PCM channels: LFE direct plus 15 objects) and the DTS:X clip "All Around Us" (12 routed plus 3 object channels) both played with A-V 0.000; owner heard sound | **Verified to play**; routing through CamillaDSP, level against `mpv-atmos` and the rendered layout against the measured one **not yet checked** |
+| Level of the new player against `mpv-atmos` | The new engine logs "Dialog normalization: dialogue_level=-23 dBFS -> gain=-8 dB" on the Atmos clip; whether the old engine (0.3.0) did the same is unknown. If not, Atmos films play about 8 dB quieter on the new player and the trims were set against the old level | **Open**: `preflight compare FILE` shows the difference |
 | Standing profile (`./make-default.sh`, `eq ensure` in mpv-atmos) survives reboot and starts the services | 2026-10-24 cold boot away from the rig (Vantec not connected): `eq status` = EQ ON, router active, CamillaDSP active with `drone2, bed alignment: yes, heights: bass to sub + tone-match`; `mpv-atmos` started Atmos 8 ch into PipeWire. A later `eq status` showed 0 links, expected with no USB interface | **Services and profile verified at boot**; routing to the rig after a reboot not testable without the Vantec, **still to do at the rig** |
 | Auto-routing starts with the system and handles mpv, stereo, 5.1 and 8 channels | Simulated PipeWire graph only (`tests/test_router.py`) | **Not yet tested on the real system** |
 | The `eq` switch works mid-film | Simulated only | **Not yet tested** |
@@ -32,10 +34,10 @@ Updated 2026-10-23. "Verified" means measured **and** confirmed by a recording o
 
 ## Checks still to do
 
-0. **Run `scripts/preflight` at the rig** (USB DAC connected, ideally after a fresh boot) and send the report. It is read-only: it checks tools, services, the DAC's profiles and inputs, links, xruns, real-time priority and the live mpv options. `preflight --tests` adds the repository tests; `preflight capture SOURCE` is the Fire Stick optical-in decode test.
+0. **Run `scripts/preflight` at the rig** (USB DAC connected, ideally after a fresh boot) and send the report. It is read-only: it checks tools, services, the DAC's profiles and inputs, links, xruns, real-time priority and the live mpv options. `preflight --tests` adds the repository tests; `preflight capture SOURCE` is the Fire Stick optical-in decode test. With the new player: `preflight playing` in a second terminal while a film plays (router state, classification, mpv's port names, whether they link into CamillaDSP, mpv's live audio parameters), and `preflight compare FILE` (not read-only: runs `mpv-atmos` and `mpv-object-audio` for 12 s each, muted, and diffs engine version, layout, room ratios, dialogue normalisation and gain).
 
 1. **Reboot test at the rig.** Services and profile came up at boot (2026-10-24, laptop away from the rig). Still to do with the Vantec connected: start a film, run `eq status`, expect "audio goes through CamillaDSP"; then stop CamillaDSP and confirm the direct fallback.
-2. **Port names.** While Atmos content plays, then a 5.1 file, record `pw-link -o | grep mpv` in [architecture.md](architecture.md).
+2. **Port names.** The new player logs `AO: [pipewire] 48000Hz unknown8 (empty) 8ch float` (no channel map); `preflight playing` says whether its ports carry the names the router expects (FL FR RL RR FC LFE SL SR) and whether they reach CamillaDSP. While Atmos content plays, then a 5.1 file, record `pw-link -o | grep mpv` in [architecture.md](architecture.md).
    The router handles any port subset, but `route-mpv.sh` reported 8 channels linked while a 6-channel FLAC played: write down why.
 3. **Lip-sync.** Watch a clear-speech clip with `eq on` and `eq off`; adjust `--audio-delay` if a difference is visible.
 4. **Alignment proof.** The bed-off versus bed-on recording in [measurement.md](measurement.md#proof-of-the-alignment-still-open).

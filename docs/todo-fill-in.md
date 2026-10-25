@@ -2,7 +2,7 @@
 
 Search the docs for `TODO(owner)`. Checklist:
 
-- [ ] **First: run `scripts/object-audio-install.sh deps`, then `scripts/object-audio-install.sh`, then `mpv-object-audio --oa-info` and play one Atmos and one 5.1 film with it** (written 2026-10-25, never run; engine and bridges are prebuilt releases, only mpv is built). Record the versions it prints (`~/.local/opt/mpv-object-audio/VERSIONS`), check the Dolphin right-click menu and `eq source` while it plays, and send the tail of `~/.local/opt/mpv-object-audio/build.log` if a step fails. Then update the "not yet run" notes in the [README](../README.md#quick-start-on-a-new-machine) and [installation.md](installation.md)
+- [ ] **With the Vantec connected (the installer, the router update and a first Atmos and DTS:X play were done on 2026-10-25 without it):** play the Atmos clip with `mpv-object-audio`, then run `scripts/preflight playing` in a second terminal and send the report (does the new player go through CamillaDSP? are its ports named FL..SR?); run `scripts/preflight compare "<Atmos clip>"` and send the diff (engine version, layout, room ratios, **dialogue normalisation -8 dB**); then play the same clip on `mpv-atmos` and `mpv-object-audio` and compare level and bass by ear. Record the versions from `~/.local/opt/mpv-object-audio/VERSIONS` in [installation.md](installation.md) and decide when `mpv-atmos` is retired
 
 - [x] Laptop model, OS and kernel version; PipeWire and WirePlumber versions: recorded 2026-10-24 in [installation.md](installation.md#2-player-stack)
 - [x] `systemctl --user cat camilladsp.service`: collected (ExecStart `/usr/local/bin/camilladsp %h/.config/camilladsp/config.yml`); the example unit still needs to be compared with it
