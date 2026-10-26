@@ -11,6 +11,7 @@ Each figure's caption in the file says which of the three it is.   Usage: python
 """
 import importlib.util
 import os
+import sys
 import textwrap
 
 import numpy as np
@@ -22,9 +23,17 @@ import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
 OUT = os.path.join(ROOT, "docs", "graphs")
+WS = os.environ.get("SDHT_WORKSPACE", os.path.join(ROOT, ".."))   # the repositories are cloned side by side (scripts/clone-all.sh)
+
+
+def sib(repo, *parts):
+    p = os.path.join(WS, repo, *parts)
+    if not os.path.exists(p):
+        sys.exit(f"{p} not found: clone the {repo} repository next to this one (scripts/clone-all.sh) or set SDHT_WORKSPACE")
+    return p
 os.makedirs(OUT, exist_ok=True)
 
-spec = importlib.util.spec_from_file_location("seteq", os.path.join(ROOT, "scripts", "set-eq.py"))
+spec = importlib.util.spec_from_file_location("seteq", sib("linux-theater-dsp", "scripts", "set-eq.py"))
 SE = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(SE)
 
@@ -95,8 +104,8 @@ def highshelf_db(f, f0, gain, q, fs=48000):
 
 
 GRID = 2 ** np.arange(np.log2(25), np.log2(1000), 1 / 24)
-fL, sL = read_rew(os.path.join(ROOT, "data", "rew", "L-sweep-2026-10-19.txt"))
-fF, sF = read_rew(os.path.join(ROOT, "data", "rew", "LFE-sweep-2026-10-19.txt"))
+fL, sL = read_rew(sib("theater-measurement", "data", "rew", "L-sweep-2026-10-19.txt"))
+fF, sF = read_rew(sib("theater-measurement", "data", "rew", "LFE-sweep-2026-10-19.txt"))
 yL, yF = smooth(fL, sL, GRID), smooth(fF, sF, GRID)
 mid = lambda y: band(GRID, y, 300, 400)
 yL -= mid(yL)

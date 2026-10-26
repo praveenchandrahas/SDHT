@@ -13,6 +13,7 @@ import importlib.util
 import io
 import json
 import os
+import sys
 import re
 import contextlib
 import textwrap
@@ -27,6 +28,14 @@ from scipy.signal import welch, spectrogram, butter, sosfiltfilt, fftconvolve
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
 OUT = os.path.join(ROOT, "docs", "graphs")
+WS = os.environ.get("SDHT_WORKSPACE", os.path.join(ROOT, ".."))   # the repositories are cloned side by side (scripts/clone-all.sh)
+
+
+def sib(repo, *parts):
+    p = os.path.join(WS, repo, *parts)
+    if not os.path.exists(p):
+        sys.exit(f"{p} not found: clone the {repo} repository next to this one (scripts/clone-all.sh) or set SDHT_WORKSPACE")
+    return p
 os.makedirs(OUT, exist_ok=True)
 FS = 48000
 BLUE, ORANGE, GREEN, RED, GREY, PURPLE = "#2a6fb0", "#d9822b", "#2e8b57", "#c0392b", "#8a8a8a", "#7a5aa6"
@@ -40,12 +49,12 @@ def load(name, path):
     return m
 
 
-SE = load("seteq", os.path.join(ROOT, "scripts", "set-eq.py"))
-SW = load("sweepan", os.path.join(HERE, "sweeptest", "analyze-sweeptest.py"))
-SUB = load("subtestan", os.path.join(HERE, "subtest", "analyze-subtest.py"))
-RF = load("reflan", os.path.join(HERE, "reflecttest", "analyze-reflections.py"))
-CSW = json.load(open(os.path.join(HERE, "sweeptest", "sweeptest-cues.json")))
-CSUB = json.load(open(os.path.join(HERE, "subtest", "subtest-cues.json")))
+SE = load("seteq", sib("linux-theater-dsp", "scripts", "set-eq.py"))
+SW = load("sweepan", sib("theater-measurement", "tools", "sweeptest", "analyze-sweeptest.py"))
+SUB = load("subtestan", sib("theater-measurement", "tools", "subtest", "analyze-subtest.py"))
+RF = load("reflan", sib("theater-measurement", "tools", "reflecttest", "analyze-reflections.py"))
+CSW = json.load(open(sib("theater-measurement", "tools", "sweeptest", "sweeptest-cues.json")))
+CSUB = json.load(open(sib("theater-measurement", "tools", "subtest", "subtest-cues.json")))
 
 
 def save(fig, name, note):
@@ -436,7 +445,7 @@ def hot_figure(path):
 
 # ------------------------------------------------------------------------------------------------ dialogue
 def dialogue_figure(path):
-    DL = load("dlgan", os.path.join(HERE, "dialoguetest", "analyze-dialoguetest.py"))
+    DL = load("dlgan", sib("theater-measurement", "tools", "dialoguetest", "analyze-dialoguetest.py"))
     txt = run_report(DL, path, ["--out=" + os.devnull])
     lines = txt.splitlines()
     i = next(k for k, l in enumerate(lines) if l.strip().startswith("Hz") and "FC-FLFR" in l)

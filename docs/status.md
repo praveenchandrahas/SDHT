@@ -24,7 +24,7 @@ Updated 2026-10-25. "Verified" means measured **and** confirmed by a recording o
 
 **Now, in this order** (each is quick and tells us what is actually broken):
 1. `scripts/preflight` and the reboot test with the USB DAC connected (checks 0-1 below).
-2. The bass-rattle hot run ([measurement.md](measurement.md); the owner's cabinet diagnosis is recorded above).
+2. The bass-rattle hot run ([measurement.md](https://github.com/praveenchandrahas/theater-measurement/blob/main/docs/measurement.md); the owner's cabinet diagnosis is recorded above).
 3. Vantec checks: whether the optical input and a second digital stream work alongside the 7.1 outputs (`preflight` lists the profiles and sources; `preflight capture SOURCE` is the Fire Stick decode test).
 4. Nearfield sweeps of the spare HW-T670 soundbar and its sub (usable band, crossover, distortion), only once 1-3 are done.
 
@@ -40,7 +40,7 @@ Updated 2026-10-25. "Verified" means measured **and** confirmed by a recording o
 2. **Port names.** The new player logs `AO: [pipewire] 48000Hz unknown8 (empty) 8ch float` (no channel map); `preflight playing` says whether its ports carry the names the router expects (FL FR RL RR FC LFE SL SR) and whether they reach CamillaDSP. While Atmos content plays, then a 5.1 file, record `pw-link -o | grep mpv` in [architecture.md](architecture.md).
    The router handles any port subset, but `route-mpv.sh` reported 8 channels linked while a 6-channel FLAC played: write down why.
 3. **Lip-sync.** Watch a clear-speech clip with `eq on` and `eq off`; adjust `--audio-delay` if a difference is visible.
-4. **Alignment proof.** The bed-off versus bed-on recording in [measurement.md](measurement.md#proof-of-the-alignment-still-open).
+4. **Alignment proof.** The bed-off versus bed-on recording in [measurement.md](https://github.com/praveenchandrahas/theater-measurement/blob/main/docs/measurement.md#proof-of-the-alignment-still-open).
 5. **Real films.** A few non-trailer films (dialogue-heavy, quiet) with the final settings.
 6. **Upmix by ear.** Measured offline only. At the rig: a YouTube clip (speech, then music) in `stereo:voice|balanced|wide`, and a 5.1 film in `bed:subtle|balanced|wide`; note the flavour you prefer. 
 7. **Automatic profile at the rig.** (a) Play a YouTube video in Chrome: `eq status` should show "Google Chrome: playing, 2/2 channels patched" and `Profile: stereo:balanced`; if it says nothing about Chrome, send `pw-link -o | grep -i chrome`. (b) Start an Atmos film, then a 5.1 file, then a stereo file with `mpv-atmos`: `eq source` and `eq status` should say film / bed / stereo. (c) Chrome playing while a film starts: the film wins and Chrome must go back to normal sound (untested: relies on WirePlumber re-linking it). (d) Plain `mpv` needs `input-ipc-server` in mpv.conf.

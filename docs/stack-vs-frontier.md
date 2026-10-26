@@ -277,4 +277,4 @@ Video
 - DisplayCAL forum, 3D LUT for projector tone mapping (2021): https://hub.displaycal.net/forums/topic/3dlut-for-projector-tone-mapping/
 
 The subject
-- SDHT repository (public): https://github.com/praveenchandrahas/SDHT
+- SDHT repository (public): https://github.com/praveenchandrahas/Software-Defined-Home-Theatre

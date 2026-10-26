@@ -118,7 +118,7 @@ report() {
   done
   [ -f "$(command -v mpv-atmos 2>/dev/null)" ] && { printf '**wrapper: mpv-atmos (%s)**\n' "$(command -v mpv-atmos)"; cat "$(command -v mpv-atmos)" | head -80 | code; }
   W="$(command -v mpv-atmos 2>/dev/null || true)"
-  for R in "$(dirname "$0")/mpv-atmos" "$(dirname "$0")/scripts/mpv-atmos"; do
+  for R in "$(dirname "$0")/mpv-atmos" "$(dirname "$0")/scripts/mpv-atmos" "$(dirname "$0")/../../mpv-object-audio/scripts/mpv-atmos"; do
     if [ -f "$R" ] && [ -n "$W" ] && [ "$(readlink -f "$R")" != "$(readlink -f "$W")" ]; then
       printf '**installed mpv-atmos against %s (diff; empty = identical)**\n' "$R"; diff "$W" "$R" 2>&1 | head -60 | code
     fi
