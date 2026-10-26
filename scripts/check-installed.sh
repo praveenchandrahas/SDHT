@@ -43,6 +43,14 @@ if [ -e "$BIN/eq" ]; then
   n=$((n + 1)); if [ "$(readlink "$BIN/eq" 2>/dev/null)" = "theater-route" ]; then printf '%-24s identical    (symlink to theater-route)\n' "eq"; else printf '%-24s DIFFERS    (not a symlink to theater-route)\n' "eq"; bad=1; fi
 fi
 [ -f "$WS/seekthumbs/thumbfast.lua" ] && [ -e "$MPVCONF/scripts/thumbfast.lua" ] && row "seekthumbs viewer" "$MPVCONF/scripts/thumbfast.lua" "$WS/seekthumbs/thumbfast.lua" "cd $WS/seekthumbs && ./seekthumbs.py install-viewer"
+# optional parts: only checked once they are installed
+if [ -e "$BIN/theater-ctld" ]; then
+  row theater-ctld      "$BIN/theater-ctld"                         "$R/theater-ctld"                          "cd $WS/linux-theater-dsp && ./scripts/install-ctld.sh"
+  row "ctld web page"   "$HOME/.local/share/theater-ctld/index.html" "$WS/linux-theater-dsp/web/index.html"    "cd $WS/linux-theater-dsp && ./scripts/install-ctld.sh"
+fi
+for c in "$MPVCONF" "$HOME/.config/mpv"; do
+  [ -e "$c/scripts/theater_status.lua" ] && row "mpv status overlay" "$c/scripts/theater_status.lua" "$M/theater_status.lua" "cd $WS/mpv-object-audio && ./scripts/install-theater-status.sh"
+done
 echo
 echo "repository state (local only, no network):"
 for r in UMBRELLA linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
