@@ -3,7 +3,7 @@
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 WS="${SDHT_WORKSPACE:-$(dirname "$HERE")}"
 rc=0
-for r in theater-router upmix-engine drift-tracker mpv-object-audio seekthumbs; do
+for r in theater-router mpv-object-audio seekthumbs theater-measurement; do
   if [ -f "$WS/$r/tests/run.sh" ]; then
     echo "== $r"; bash "$WS/$r/tests/run.sh" || { echo "FAIL: $r tests failed"; rc=1; }
   else

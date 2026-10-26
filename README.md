@@ -14,17 +14,15 @@ largest layout used here** (7.1.4 and 5.1.4 are deliberately not used).
 
 ## The repositories
 
-The project started as one repository and was split into one repository per sub-project on 2026-10-25 (history preserved in each). This one, **sdht**, is the front door: the build log, documentation, results and graphs.
+The project started as one repository and was split into five repositories on 2026-10-25 (history preserved in each). This one, **sdht**, is the front door: the build log, documentation, results and graphs.
 
 | Repository | What it is |
 |---|---|
-| **[sdht](https://github.com/praveenchandrahas/sdht)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh`, the figure scripts |
-| **[theater-router](https://github.com/praveenchandrahas/theater-router)** | `eq` / `theater-route` (PipeWire routing) and `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the systemd units, router tests |
-| **[upmix-engine](https://github.com/praveenchandrahas/upmix-engine)** | the stereo and 5.1-bed upmixers (`upmix.py`) and the adaptive ambience engine (`upmix_engine.py`), with their offline test harness |
+| **[sdht](https://github.com/praveenchandrahas/sdht)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh` / `check-installed.sh`, the figure scripts |
+| **[theater-router](https://github.com/praveenchandrahas/theater-router)** | `eq` / `theater-route` (PipeWire routing), `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the stereo and 5.1-bed upmixers (`upmix.py`), the adaptive ambience engine (`upmix_engine.py`) with its offline test harness (`tools/upmixtest`), the systemd units, router tests |
 | **[mpv-object-audio](https://github.com/praveenchandrahas/mpv-object-audio)** | installer and wrapper for the live Atmos / DTS:X player (Omniphony, harletty-bridge, patched mpv) |
 | **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | background seek-bar thumbnails for an rclone library, and the mpv viewer script |
-| **[theater-measurement](https://github.com/praveenchandrahas/theater-measurement)** | test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison), REW data |
-| **[drift-tracker](https://github.com/praveenchandrahas/drift-tracker)** | measures whether two playback paths (the second sub) drift apart |
+| **[theater-measurement](https://github.com/praveenchandrahas/theater-measurement)** | test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison, second-sub drift), microphone calibration (`miccal.py`), REW data |
 
 Clone them all side by side with `./scripts/clone-all.sh` (they find each other by folder name; `SDHT_WORKSPACE` overrides). In the prose below, a path such as `scripts/set-eq.py` or `tools/sweeptest/` refers to the repository in the table that owns it. Details: [docs/repo-split.md](docs/repo-split.md).
 
@@ -146,7 +144,7 @@ The heights' bass "before" figure is the heights alone with no sub feed (41 dB r
 
 The upmix presets are measured offline only so far, on synthetic test signals. The adaptive ambience engine (`scripts/upmix_engine.py`, used by the stereo upmix by default, with an automatic fall-back to the fixed matrix; not yet run against real PipeWire) separates
 instrument from ambience far better than the fixed side-signal matrix on synthetic harmonic notes, and no better on noise
-([tools/upmixtest](https://github.com/praveenchandrahas/upmix-engine/blob/main/upmixtest/README.md)). The metric is the ambience kept in the surrounds minus the instrument leaking into them, in dB. It says nothing yet about music:
+([tools/upmixtest](https://github.com/praveenchandrahas/theater-router/blob/main/tools/upmixtest/README.md)). The metric is the ambience kept in the surrounds minus the instrument leaking into them, in dB. It says nothing yet about music:
 
 ![Adaptive ambience vs fixed matrix](docs/graphs/11_upmix_adaptive_vs_fixed.png)
 
@@ -222,7 +220,7 @@ Everything goes into `~/.local/opt/mpv-object-audio`; the installer stops, and i
 **2. The DSP and routing: CamillaDSP profile, router and the `eq` command.**
 
 ```bash
-cd ../theater-router                         # needs the upmix-engine repository beside it (clone-all.sh did that)
+cd ../theater-router                         # the upmixers are part of this repository
 ./scripts/make-default.sh                   # writes and loads the standing profile, installs the router and `eq`, enables the services
 ```
 
@@ -251,7 +249,24 @@ should only be rebuilt by someone who knows what they are doing.
 
 The tuning decisions, measurements, listening tests and the build itself are Praveen's. The scripts, the analysis code and first drafts of these documents were written with Claude (Anthropic) in working sessions, mainly 2026-10-20 to 2026-10-24
 (TODO: which scripts, if any, predate that). This includes the code that produces the numbers: the sweep, sub, dialogue (STI) and reflection analysers and the rattle detector. It has been checked against simulated rooms and against the REW exports,
-not independently validated. Licensed under the [Apache License 2.0](LICENSE). The projects credited above have their own licences, which are not summarised here.
+not independently validated.
+
+**Licence: [Apache License 2.0](LICENSE)**, for all five repositories. It lets anyone use, change and redistribute the work, including commercially, and it carries an explicit patent grant and a "no warranty" clause. Most of the project is integration of other people's software
+(Omniphony, truehdd, CamillaDSP, PipeWire, mpv, ffmpeg and others); those keep their own licences and are not relicensed by this one. Where this project's code is combined with GPL software (Omniphony, CamillaDSP, mpv are GPL), the combined program you run is GPL-covered,
+but nothing in these repositories copies their code, so Apache-2.0 for the scripts is consistent. A third-party table is in the [mpv-object-audio README](https://github.com/praveenchandrahas/mpv-object-audio#licences-of-what-it-installs). Licences of harletty-bridge and mpv-omniphony are not yet verified.
+Dolby, Dolby Atmos, DTS and DTS:X are trademarks of their owners; this project is not affiliated with or endorsed by them, and contains no copyrighted films, decoders or encoded media.
+
+**What is public.** Everything except credentials. There are none in the repositories (they were scanned before publication); keep it that way: never commit tokens, `rclone.conf`, or anything under `~/.config` with secrets.
+
+## Adapting this to your system
+
+The files describe one particular rig and contain paths, names and numbers from it: a home folder such as `/home/praveen`, the Vantec 7.1 USB interface and its PipeWire node names, the speaker layout (5.1.2 with a Z906 and ceiling heights), delays, trims and EQ measured in one room, and the library and rclone mount paths.
+**Change these to match your own system before running anything.** The delays, trims and EQ in particular are only valid for that room and must be re-measured for yours ([docs/runbook.md](docs/runbook.md)). Scripts that install anything say so before they do, and `scripts/check-installed.sh` and `scripts/preflight` only read.
+
+## Checking the install and the tests
+
+- `scripts/check-installed.sh [--diff]` compares the scripts installed in `~/.local/bin` with the repository copies. It is read-only: it writes nothing, installs nothing, uses no network and no `sudo`; when something differs it only prints the command you could run.
+- Each repository has a GitHub Actions workflow (`.github/workflows/test.yml`) that runs its tests on GitHub's servers with read-only permissions and no secrets. It never touches your machine; your machine is not connected to GitHub in any way by this.
 
 ## Appendix: the main graphs
 

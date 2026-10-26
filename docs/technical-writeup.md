@@ -31,7 +31,7 @@ Blue outline is software, grey fill is hardware. The orange path is the fallback
 
 ## 4. The room
 
-![Photo slot: room, screen wall](img/placeholder)
+(photo slot: room, screen wall)
 
 The room photographs shared in earlier conversations could not be retrieved into this document; only Claude's written analyses of them survive. Add the photos in the marked slots. What those analyses recorded:
 

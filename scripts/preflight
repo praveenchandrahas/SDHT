@@ -119,18 +119,10 @@ E
 sec "installed scripts match the repository"
 SD="${SDHT:-$HOME/SDHT}"; [ -d "$SD/scripts" ] || SD="$HOME/sdht"
 WS="${SDHT_WORKSPACE:-$(dirname "$SD")}"      # the project's repositories are cloned side by side (scripts/clone-all.sh)
-repo_file() {                                  # installed script name -> its file in whichever repository owns it
-    case "$1" in
-        theater-route|set-eq.py)   echo "$WS/theater-router/scripts/$1" ;;
-        upmix.py|upmix_engine.py)  echo "$WS/upmix-engine/$1" ;;
-        mpv-atmos|mpv-object-audio) echo "$WS/mpv-object-audio/scripts/$1" ;;
-    esac
-}
+CI="$(dirname "$(readlink -f "$0")")/check-installed.sh"
 if [ -d "$WS/theater-router" ] || [ -d "$WS/mpv-object-audio" ]; then
-    for f in theater-route set-eq.py upmix.py upmix_engine.py mpv-atmos mpv-object-audio; do
-        i="$HOME/.local/bin/$f"; r=$(repo_file "$f")
-        [ -f "$r" ] || { warn "$f: repository file not found ($r)"; continue; }
-        [ -e "$i" ] && { cmp -s "$i" "$r" && ok "$f identical to the repo" || warn "$f differs from the repo (re-run install-autoroute.sh?)"; } || warn "$f not installed in ~/.local/bin"
+    SDHT_WORKSPACE="$WS" bash "$CI" 2>&1 | sed -n '/^[a-z]/{/^repository state/q;p}' | while IFS= read -r l; do
+        case "$l" in *identical*) ok "${l%% *} identical to the repo";; *DIFFERS*|*MISSING*|*NO-REPO*) warn "$l";; esac
     done
 else
     warn "sibling repositories not found next to $SD (run scripts/clone-all.sh, or set SDHT_WORKSPACE)"

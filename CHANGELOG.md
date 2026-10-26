@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2026-10-25: repository split
-- Split into seven repositories (sdht, theater-router, upmix-engine, mpv-object-audio, seekthumbs, theater-measurement, drift-tracker) with history preserved; see docs/repo-split.md.
+- Split into five repositories (sdht, theater-router incl. the upmixers, mpv-object-audio, seekthumbs, theater-measurement incl. the drift tracker) with history preserved; see docs/repo-split.md.
 - `scripts/clone-all.sh`, `scripts/test-all.sh`; `preflight` and the figure scripts now read the sibling repositories.
 
 ## 2026-10-23
