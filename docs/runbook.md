@@ -120,7 +120,8 @@ USB interface enumerated under a different name, see [troubleshooting.md](troubl
 The tuning lives in a few small files. Keep them in this repository and push regularly:
 `scripts/set-eq.py` (presets and alignment table), `configs/`, `docs/`.
 Outside the repository, back up `~/.config/camilladsp/config.yml` (regenerable with set-eq.py), the mic calibration
-file, `mpv.conf`, and the Omniphony configuration. TODO(owner): paths of the last two.
+file, and the player configuration: `~/.config/omniphony/` (config.yaml, overlay-prefs.conf), `~/.config/mpv/` (input.conf,
+script-opts, scripts) and `~/.local/bin/mpv-atmos`. There is no `mpv.conf`.
 
 ## Re-tuning checklist
 
