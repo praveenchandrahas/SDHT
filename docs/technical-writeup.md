@@ -93,7 +93,7 @@ The surrounds are about 1 m closer to the seat than FR, the farthest speaker (SL
 
 ## 8. Automation
 
-`theater-router` is a user service that watches the PipeWire graph every 0.5 s and links any mpv output to CamillaDSP, make-before-break, with a direct fallback. `eq on|off|toggle|status` switches the DSP in or out; off is a full bypass, including delays and trims. The behaviour is covered by 35 simulated tests.
+`linux-theater-dsp` is a user service that watches the PipeWire graph every 0.5 s and links any mpv output to CamillaDSP, make-before-break, with a direct fallback. `eq on|off|toggle|status` switches the DSP in or out; off is a full bypass, including delays and trims. The behaviour is covered by 35 simulated tests.
 
 ## 9. Project assessment
 

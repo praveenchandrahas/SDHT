@@ -49,7 +49,7 @@ def load(name, path):
     return m
 
 
-SE = load("seteq", sib("theater-router", "scripts", "set-eq.py"))
+SE = load("seteq", sib("linux-theater-dsp", "scripts", "set-eq.py"))
 SW = load("sweepan", sib("theater-measurement", "tools", "sweeptest", "analyze-sweeptest.py"))
 SUB = load("subtestan", sib("theater-measurement", "tools", "subtest", "analyze-subtest.py"))
 RF = load("reflan", sib("theater-measurement", "tools", "reflecttest", "analyze-reflections.py"))

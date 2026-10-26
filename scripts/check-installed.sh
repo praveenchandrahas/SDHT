@@ -22,8 +22,8 @@ row() {   # row LABEL INSTALLED REPOFILE UPDATE-HINT
     [ "$SHOWDIFF" = 1 ] && diff -u "$inst" "$repo" | head -40 | sed 's/^/             | /'
   fi
 }
-R="$WS/theater-router/scripts"; M="$WS/mpv-object-audio/scripts"
-UP="cd $WS/theater-router && ./scripts/install-autoroute.sh"
+R="$WS/linux-theater-dsp/scripts"; M="$WS/mpv-object-audio/scripts"
+UP="cd $WS/linux-theater-dsp && ./scripts/install-autoroute.sh"
 row theater-route        "$BIN/theater-route"      "$R/theater-route"      "$UP"
 row set-eq.py            "$BIN/set-eq.py"          "$R/set-eq.py"          "$UP"
 row upmix.py             "$BIN/upmix.py"           "$R/upmix.py"           "$UP"
@@ -36,7 +36,7 @@ fi
 [ -f "$WS/seekthumbs/thumbfast.lua" ] && [ -e "$MPVCONF/scripts/thumbfast.lua" ] && row "seekthumbs viewer" "$MPVCONF/scripts/thumbfast.lua" "$WS/seekthumbs/thumbfast.lua" "cd $WS/seekthumbs && ./seekthumbs.py install-viewer"
 echo
 echo "repository state (local only, no network):"
-for r in sdht theater-router mpv-object-audio seekthumbs theater-measurement; do
+for r in sdht linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
   d="$WS/$r"; [ "$r" = sdht ] && d="$HERE"
   if [ -d "$d/.git" ]; then
     dirty=$(git -C "$d" status --porcelain 2>/dev/null | wc -l)

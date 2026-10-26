@@ -33,7 +33,7 @@ def sib(repo, *parts):
     return p
 os.makedirs(OUT, exist_ok=True)
 
-spec = importlib.util.spec_from_file_location("seteq", sib("theater-router", "scripts", "set-eq.py"))
+spec = importlib.util.spec_from_file_location("seteq", sib("linux-theater-dsp", "scripts", "set-eq.py"))
 SE = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(SE)
 

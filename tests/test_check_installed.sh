@@ -3,8 +3,8 @@
 set -u
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
-WS="$T/ws"; BIN="$T/bin"; mkdir -p "$WS/theater-router/scripts" "$WS/mpv-object-audio/scripts" "$BIN" "$T/home"
-for f in theater-route set-eq.py upmix.py upmix_engine.py; do echo "repo $f" > "$WS/theater-router/scripts/$f"; cp "$WS/theater-router/scripts/$f" "$BIN/$f"; done
+WS="$T/ws"; BIN="$T/bin"; mkdir -p "$WS/linux-theater-dsp/scripts" "$WS/mpv-object-audio/scripts" "$BIN" "$T/home"
+for f in theater-route set-eq.py upmix.py upmix_engine.py; do echo "repo $f" > "$WS/linux-theater-dsp/scripts/$f"; cp "$WS/linux-theater-dsp/scripts/$f" "$BIN/$f"; done
 for f in mpv-object-audio mpv-atmos; do echo "repo $f" > "$WS/mpv-object-audio/scripts/$f"; cp "$WS/mpv-object-audio/scripts/$f" "$BIN/$f"; done
 ln -s theater-route "$BIN/eq"
 run() { HOME="$T/home" SDHT_WORKSPACE="$WS" BIN="$BIN" MPVCONF="$T/none" bash "$HERE/scripts/check-installed.sh" "$@" 2>&1; }
@@ -25,7 +25,7 @@ rm "$WS/mpv-object-audio/scripts/mpv-atmos"
 out=$(run)
 ck "a script missing from the repository is reported as NO-REPO" "$(echo "$out" | grep -q 'mpv-atmos *NO-REPO' && echo ok)"
 # read-only: restore the two edits we made on purpose, then nothing may differ from the first snapshot
-cp "$WS/theater-router/scripts/set-eq.py" "$BIN/set-eq.py"; cp "$WS/theater-router/scripts/upmix.py" "$BIN/upmix.py"; echo "repo mpv-atmos" > "$WS/mpv-object-audio/scripts/mpv-atmos"
+cp "$WS/linux-theater-dsp/scripts/set-eq.py" "$BIN/set-eq.py"; cp "$WS/linux-theater-dsp/scripts/upmix.py" "$BIN/upmix.py"; echo "repo mpv-atmos" > "$WS/mpv-object-audio/scripts/mpv-atmos"
 run >/dev/null; run --diff >/dev/null
 ck "running it (also with --diff) changes no file" "$([ "$(snap)" = "$before" ] && echo ok)"
 exit $fail

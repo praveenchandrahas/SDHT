@@ -19,7 +19,7 @@ The project started as one repository and was split into five repositories on 20
 | Repository | What it is |
 |---|---|
 | **[sdht](https://github.com/praveenchandrahas/sdht)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh` / `check-installed.sh`, the figure scripts |
-| **[theater-router](https://github.com/praveenchandrahas/theater-router)** | `eq` / `theater-route` (PipeWire routing), `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the stereo and 5.1-bed upmixers (`upmix.py`), the adaptive ambience engine (`upmix_engine.py`) with its offline test harness (`tools/upmixtest`), the systemd units, router tests |
+| **[linux-theater-dsp](https://github.com/praveenchandrahas/linux-theater-dsp)** | `eq` / `theater-route` (PipeWire routing), `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the stereo and 5.1-bed upmixers (`upmix.py`), the adaptive ambience engine (`upmix_engine.py`) with its offline test harness (`tools/upmixtest`), the systemd units, router tests |
 | **[mpv-object-audio](https://github.com/praveenchandrahas/mpv-object-audio)** | installer and wrapper for the live Atmos / DTS:X player (Omniphony, harletty-bridge, patched mpv) |
 | **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | background seek-bar thumbnails for an rclone library, and the mpv viewer script |
 | **[theater-measurement](https://github.com/praveenchandrahas/theater-measurement)** | test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison, second-sub drift), microphone calibration (`miccal.py`), REW data |
@@ -144,7 +144,7 @@ The heights' bass "before" figure is the heights alone with no sub feed (41 dB r
 
 The upmix presets are measured offline only so far, on synthetic test signals. The adaptive ambience engine (`scripts/upmix_engine.py`, used by the stereo upmix by default, with an automatic fall-back to the fixed matrix; not yet run against real PipeWire) separates
 instrument from ambience far better than the fixed side-signal matrix on synthetic harmonic notes, and no better on noise
-([tools/upmixtest](https://github.com/praveenchandrahas/theater-router/blob/main/tools/upmixtest/README.md)). The metric is the ambience kept in the surrounds minus the instrument leaking into them, in dB. It says nothing yet about music:
+([tools/upmixtest](https://github.com/praveenchandrahas/linux-theater-dsp/blob/main/tools/upmixtest/README.md)). The metric is the ambience kept in the surrounds minus the instrument leaking into them, in dB. It says nothing yet about music:
 
 ![Adaptive ambience vs fixed matrix](docs/graphs/11_upmix_adaptive_vs_fixed.png)
 
@@ -193,7 +193,7 @@ docs/        the documentation (start with architecture.md and runbook.md); docs
 scripts/     preflight (read-only health report), collect-versions.sh, clone-all.sh, test-all.sh
 tools/       the figure and diagram generators: make-graphs.py, make-recording-graphs.py, make-verification-figures.py,
              make-architecture-diagram.py, make-system-overview.py, build-writeup-page.py
-             (they read the other repositories: set-eq.py from theater-router, REW data and analysers from theater-measurement)
+             (they read the other repositories: set-eq.py from linux-theater-dsp, REW data and analysers from theater-measurement)
 ```
 
 Everything else (router, upmix engine, player installer, thumbnails, measurement kits) is in the repositories listed above.
@@ -220,7 +220,7 @@ Everything goes into `~/.local/opt/mpv-object-audio`; the installer stops, and i
 **2. The DSP and routing: CamillaDSP profile, router and the `eq` command.**
 
 ```bash
-cd ../theater-router                         # the upmixers are part of this repository
+cd ../linux-theater-dsp                         # the upmixers are part of this repository
 ./scripts/make-default.sh                   # writes and loads the standing profile, installs the router and `eq`, enables the services
 ```
 

@@ -120,7 +120,7 @@ sec "installed scripts match the repository"
 SD="${SDHT:-$HOME/SDHT}"; [ -d "$SD/scripts" ] || SD="$HOME/sdht"
 WS="${SDHT_WORKSPACE:-$(dirname "$SD")}"      # the project's repositories are cloned side by side (scripts/clone-all.sh)
 CI="$(dirname "$(readlink -f "$0")")/check-installed.sh"
-if [ -d "$WS/theater-router" ] || [ -d "$WS/mpv-object-audio" ]; then
+if [ -d "$WS/linux-theater-dsp" ] || [ -d "$WS/mpv-object-audio" ]; then
     SDHT_WORKSPACE="$WS" bash "$CI" 2>&1 | sed -n '/^[a-z]/{/^repository state/q;p}' | while IFS= read -r l; do
         case "$l" in *identical*) ok "${l%% *} identical to the repo";; *DIFFERS*|*MISSING*|*NO-REPO*) warn "$l";; esac
     done
@@ -186,11 +186,11 @@ systemctl --user is-active seekthumbs.service 2>&1 | sed 's/^/   seekthumbs.serv
 echo "-- seekthumbs.py status:"; [ -f "$WS/seekthumbs/seekthumbs.py" ] && python3 "$WS/seekthumbs/seekthumbs.py" status 2>&1 | head -8 | sed 's/^/   /'
 
 sec "services"
-for u in pipewire wireplumber pipewire-pulse theater-router theater-upmix; do echo "$u: $(systemctl --user is-active $u 2>&1)"; done
+for u in pipewire wireplumber pipewire-pulse linux-theater-dsp theater-upmix; do echo "$u: $(systemctl --user is-active $u 2>&1)"; done
 systemctl --user list-units --type=service --no-legend 2>/dev/null | grep -i camilla
 echo "rtkit-daemon: $(systemctl is-active rtkit-daemon 2>&1); RLIMIT_RTPRIO: $(ulimit -r)"
 N=15 run journalctl --user -u theater-upmix -n 15 --no-pager
-N=10 run journalctl --user -u theater-router -n 10 --no-pager
+N=10 run journalctl --user -u linux-theater-dsp -n 10 --no-pager
 
 sec "USB DAC (Vantec)"
 if lsusb 2>/dev/null | grep -qi 0d8c; then ok "USB device 0d8c present"; lsusb | grep -i 0d8c; else warn "no USB device 0d8c: is the DAC connected?"; fi
