@@ -48,6 +48,10 @@ work of others, and everything here stands on it:
 
 How the Omniphony stack was built and debugged on this machine is in [docs/omniphony-debugging.md](https://github.com/praveenchandrahas/mpv-object-audio/blob/main/docs/omniphony-debugging.md).
 
+![Block-level overview: audio data plane, control plane, measurement and tuning loop](docs/img/block-overview.png)
+
+*The short version: what the audio passes through, what controls it, and how it is tuned. The next diagram has every component.*
+
 ![System overview, every component](docs/img/system-overview.png)
 
 *Every component, hardware and software. Dashed boxes are items still to confirm (see [todo-fill-in](docs/todo-fill-in.md)).*
