@@ -27,3 +27,11 @@ Search the docs for `TODO(owner)`. Checklist:
 - [ ] Which scripts predate the 2026-10-20 to 24 working sessions
 - [ ] Re-run `./scripts/collect-versions.sh --redact` with the USB interface plugged in and a film playing (loaded plugin, live links, audio devices)
 - [ ] Copy `scripts/mpv-atmos` to `~/.local/bin/mpv-atmos` on the laptop (the installed one has no `eq prepare` and no IPC socket)
+
+From the end-to-end review of 2026-10-26 (what would most raise the project's quality; see the reply in the session):
+- [ ] Re-run one measurement without AI-written analysis: check one headline number (for example the FL early reflection, or the bass before/after) by hand in REW, and apply the microphone calibration file to the recording analysers
+- [ ] Repeat the key measurements on a second day (re-seat the mic) to get a real repeatability figure, and add one blind A/B listening comparison for the upmix and the heights tone-match
+- [ ] Separate room data from code: move the delay, trim and EQ constants out of `set-eq.py` into one config file, so another room only edits data
+- [ ] Add automatic checks (a CI job running `scripts/test-all.sh`, plus a check that the installed scripts match the repositories)
+- [ ] Decide what is public: the copyright and legal note for decoding Atmos/DTS:X and the source of the remux files
+- [ ] Review the number of repositories after a month: merge `drift-tracker` into `theater-measurement` and `upmix-engine` into `theater-router` if the extra repositories only add overhead
