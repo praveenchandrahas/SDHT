@@ -3,7 +3,8 @@
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 WS="${SDHT_WORKSPACE:-$(dirname "$HERE")}"
 rc=0
-for r in linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
+for r in linux-theater-dsp mpv-object-audio seekthumbs roomtone theater-measurement; do
+  [ "$r" = theater-measurement ] && [ -d "$WS/roomtone" ] && continue   # old folder name, only if not renamed yet
   if [ -f "$WS/$r/tests/run.sh" ]; then
     echo "== $r"; bash "$WS/$r/tests/run.sh" || { echo "FAIL: $r tests failed"; rc=1; }
   else

@@ -11,7 +11,7 @@ An earlier plan had seven; it was cut to five because the upmixers always run wi
 | `linux-theater-dsp` | `scripts/{theater-route,set-eq.py,upmix.py,upmix_engine.py,install-autoroute.sh,route-mpv.sh,make-default.sh}`, `configs/`, `tools/upmixtest/`, router, config and engine tests | nothing else (the upmixers are in the same repository) |
 | `mpv-object-audio` | `scripts/object-audio-install.sh`, `mpv-object-audio`, `mpv-atmos`, `mpv-atmos-overlay-off.lua`, `docs/omniphony-debugging.md` | nothing; optionally calls `eq` from `linux-theater-dsp` |
 | `seekthumbs` | `tools/seekthumbs/` (now the repo root), `docs/seekthumbs.md` (now the README), its test | nothing; works with any mpv + uosc |
-| `theater-measurement` | `tools/{sweeptest,subtest,reflecttest,dialoguetest,bartest,drifttest}`, `tools/analyze-delaytest.py`, `tools/miccal.py`, `scripts/{rec.sh,tone-test.sh,make-bedtest.py,make-delaytest.py}`, `data/`, `docs/measurement.md` | nothing (the kits use each other inside the repo) |
+| `theater-measurement` (renamed **Roomtone**, 2026-10-26; also holds the status page `gui/` and the mpv overlay `overlay/`, moved from linux-theater-dsp and mpv-object-audio) | `tools/{sweeptest,subtest,reflecttest,dialoguetest,bartest,drifttest}`, `tools/analyze-delaytest.py`, `tools/miccal.py`, `scripts/{rec.sh,tone-test.sh,make-bedtest.py,make-delaytest.py}`, `data/`, `docs/measurement.md` | nothing (the kits use each other inside the repo) |
 
 The only cross-repository couplings are **figure scripts, `preflight` and `check-installed.sh` reading files from sibling repositories**, and the upmix test harness reading nothing outside its own repository.
 

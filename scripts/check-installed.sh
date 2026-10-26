@@ -7,6 +7,7 @@
 # Folders: the repositories side by side (SDHT_WORKSPACE overrides), installed scripts in BIN (default ~/.local/bin), mpv config in MPVCONF.
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 WS="${SDHT_WORKSPACE:-$(dirname "$HERE")}"
+RT=roomtone; [ -d "$WS/roomtone" ] || [ ! -d "$WS/theater-measurement" ] || RT=theater-measurement   # the folder is called theater-measurement until you rename it
 BIN="${BIN:-$HOME/.local/bin}"
 MPVCONF="${MPVCONF:-$HOME/.config/mpv-object-audio}"
 SHOWDIFF=0; [ "${1:-}" = "--diff" ] && SHOWDIFF=1
@@ -45,15 +46,15 @@ fi
 [ -f "$WS/seekthumbs/thumbfast.lua" ] && [ -e "$MPVCONF/scripts/thumbfast.lua" ] && row "seekthumbs viewer" "$MPVCONF/scripts/thumbfast.lua" "$WS/seekthumbs/thumbfast.lua" "cd $WS/seekthumbs && ./seekthumbs.py install-viewer"
 # optional parts: only checked once they are installed
 if [ -e "$BIN/theater-ctld" ]; then
-  row theater-ctld      "$BIN/theater-ctld"                         "$R/theater-ctld"                          "cd $WS/linux-theater-dsp && ./scripts/install-ctld.sh"
-  row "ctld web page"   "$HOME/.local/share/theater-ctld/index.html" "$WS/linux-theater-dsp/web/index.html"    "cd $WS/linux-theater-dsp && ./scripts/install-ctld.sh"
+  row theater-ctld      "$BIN/theater-ctld"                         "$WS/$RT/gui/theater-ctld"                          "cd $WS/$RT/gui && ./install-ctld.sh"
+  row "ctld web page"   "$HOME/.local/share/theater-ctld/index.html" "$WS/$RT/gui/index.html"    "cd $WS/$RT/gui && ./install-ctld.sh"
 fi
 for c in "$MPVCONF" "$HOME/.config/mpv"; do
-  [ -e "$c/scripts/theater_status.lua" ] && row "mpv status overlay" "$c/scripts/theater_status.lua" "$M/theater_status.lua" "cd $WS/mpv-object-audio && ./scripts/install-theater-status.sh"
+  [ -e "$c/scripts/theater_status.lua" ] && row "mpv status overlay" "$c/scripts/theater_status.lua" "$WS/$RT/overlay/theater_status.lua" "cd $WS/$RT/overlay && ./install-theater-status.sh --bindings"
 done
 echo
 echo "repository state (local only, no network):"
-for r in UMBRELLA linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
+for r in UMBRELLA linux-theater-dsp mpv-object-audio seekthumbs $RT; do
   d="$WS/$r"; [ "$r" = UMBRELLA ] && d="$HERE"
   if [ -d "$d/.git" ]; then
     dirty=$(git -C "$d" status --porcelain 2>/dev/null | wc -l)

@@ -32,6 +32,8 @@ WS = os.environ.get("SDHT_WORKSPACE", os.path.join(ROOT, ".."))   # the reposito
 
 
 def sib(repo, *parts):
+    if repo == "theater-measurement" and not os.path.isdir(os.path.join(WS, repo)):
+        repo = "roomtone"                       # the repository was renamed to Roomtone (2026-10-26)
     p = os.path.join(WS, repo, *parts)
     if not os.path.exists(p):
         sys.exit(f"{p} not found: clone the {repo} repository next to this one (scripts/clone-all.sh) or set SDHT_WORKSPACE")

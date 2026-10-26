@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-26: Roomtone
+- `theater-measurement` renamed **Roomtone** on GitHub (history kept, old address redirects). The status page (`theater-ctld`, `web/`) moved in from linux-theater-dsp as `gui/`, the mpv overlay from mpv-object-audio as `overlay/`; the router and the CamillaDSP generator stay in linux-theater-dsp.
+- mpv overlay: one **C** key opens the status and the controls together; each control row shows its current value.
+- autocal: `mic --spectrum` (noise floor per octave band, strongest narrow tone); the sub sweep starts at 35 Hz; a bass gate stops runs whose 40 Hz signal-to-noise is too low.
+- Status page: the buffer-empty count is shown only while something plays (CamillaDSP logs it about every 21 ms when idle).
+- Profile switches reload CamillaDSP in place (no restart).
+
 ## 2026-10-25: repository split
 - Split into five repositories (sdht, linux-theater-dsp incl. the upmixers, mpv-object-audio, seekthumbs, theater-measurement incl. the drift tracker) with history preserved; see docs/repo-split.md.
 - `scripts/clone-all.sh`, `scripts/test-all.sh`; `preflight` and the figure scripts now read the sibling repositories.

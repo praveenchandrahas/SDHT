@@ -6,7 +6,7 @@ Honest framing: this room's numbers already exist and are verified (ALIGN, drone
 
 | Need | Existing | New / change |
 |---|---|---|
-| Stimulus, sync chirps, 8-ch sweeps | `theater-measurement/tools/sweeptest/make-sweeptest.py` (+cues json) | `autocal/stimulus.py`: per-channel band and level limits, pilot chirp before each sweep, repeat-FL slot |
+| Stimulus, sync chirps, 8-ch sweeps | `roomtone/tools/sweeptest/make-sweeptest.py` (+cues json) | `autocal/stimulus.py`: per-channel band and level limits, pilot chirp before each sweep, repeat-FL slot |
 | Placement, drift fit, deconvolution, arrival, level, complex H | `analyze-sweeptest.py` (`placement`, `deconv`, `arrival`, `spectrum`, `thirds`); `analyze-delaytest.py` fit | `autocal/ir.py`: copied out as an importable library (the scripts are hyphenated CLIs with `load_mono`/`chirp` duplicated 5 times); golden tests prove identical output before the old tools are touched |
 | Mic cal; drift | `tools/miccal.py`; `drifttest/drift.py` (phase 4 only) | none |
 | Height bass/tone study | `design()` in analyze-sweeptest | `autocal/heights.py` (same search, emits data not a command) |
@@ -16,7 +16,7 @@ Honest framing: this room's numbers already exist and are verified (ALIGN, drone
 | EQ fitter | **none in the repos**: the hump/drone sets are pasted results, their fitting code was not kept | new `autocal/eqfit.py` |
 | `play-through-camilla.sh` | **referenced by 4 READMEs, not in any repo** | locate or rewrite (needed for verify) |
 
-New CLI `autocal {check,run,report,apply,keep,rollback,verify}`, living in `theater-measurement/autocal/` (no sixth repo). It finds `set-eq.py` via the sibling-workspace convention of `test-all.sh`.
+New CLI `autocal {check,run,report,apply,keep,rollback,verify}`, living in `roomtone/autocal/` (no sixth repo). It finds `set-eq.py` via the sibling-workspace convention of `test-all.sh`.
 
 ## 2. Measurement sequence
 

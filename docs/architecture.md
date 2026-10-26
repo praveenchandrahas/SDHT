@@ -128,7 +128,7 @@ sequenceDiagram
 The microphone sits at the listening seat (opposite the centre speaker) on a **separate USB audio device**, so the
 recording clock and the playback clock differ. The methods account for that:
 sweeps in REW for frequency response, and a chirp test with a drift-removing fit for timing
-([measurement.md](https://github.com/praveenchandrahas/theater-measurement/blob/main/docs/measurement.md)). Findings are turned into numbers in `scripts/set-eq.py`, reloaded, and checked
+([measurement.md](https://github.com/praveenchandrahas/Roomtone/blob/main/docs/measurement.md)). Findings are turned into numbers in `scripts/set-eq.py`, reloaded, and checked
 again with a recording. That loop is how every preset and the alignment table were produced.
 
 ## Hardware

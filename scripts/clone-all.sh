@@ -8,11 +8,14 @@ HERE=$(cd "$(dirname "$0")/.." && pwd)
 TARGET="${1:-$(dirname "$HERE")}"
 mkdir -p "$TARGET"
 echo "== this repository ($(basename "$HERE")): updating"; git -C "$HERE" pull --ff-only || echo "   (could not fast-forward; left as is)"
-for r in linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
+OLD=0; [ -d "$TARGET/theater-measurement/.git" ] && [ ! -d "$TARGET/roomtone/.git" ] && OLD=1   # Roomtone was theater-measurement; GitHub redirects
+for r in linux-theater-dsp mpv-object-audio seekthumbs roomtone; do
+  [ "$r" = roomtone ] && [ "$OLD" = 1 ] && r=theater-measurement
   if [ -d "$TARGET/$r/.git" ]; then
     echo "== $r: updating"; git -C "$TARGET/$r" pull --ff-only || echo "   (could not fast-forward; left as is)"
   else
     echo "== $r: cloning"; git clone "https://github.com/$OWNER/$r" "$TARGET/$r"
   fi
 done
+[ "$OLD" = 1 ] && echo "Note: theater-measurement is now Roomtone. To rename the folder: mv $TARGET/theater-measurement $TARGET/roomtone && git -C $TARGET/roomtone remote set-url origin https://github.com/$OWNER/Roomtone"
 echo "Done. Repositories are in $TARGET. Next: scripts/test-all.sh"

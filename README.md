@@ -24,7 +24,7 @@ The project started as one repository and was split into five repositories on 20
 | **[linux-theater-dsp](https://github.com/praveenchandrahas/linux-theater-dsp)** | `eq` / `theater-route` (PipeWire routing), `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the stereo and 5.1-bed upmixers (`upmix.py`), the adaptive ambience engine (`upmix_engine.py`) with its offline test harness (`tools/upmixtest`), the systemd units, router tests |
 | **[mpv-object-audio](https://github.com/praveenchandrahas/mpv-object-audio)** | installer and wrapper for the live Atmos / DTS:X player (Omniphony, harletty-bridge, patched mpv) |
 | **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | background seek-bar thumbnails for an rclone library, and the mpv viewer script |
-| **[theater-measurement](https://github.com/praveenchandrahas/theater-measurement)** | test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison, second-sub drift), microphone calibration (`miccal.py`), REW data |
+| **[Roomtone](https://github.com/praveenchandrahas/Roomtone)** | test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison, second-sub drift), microphone calibration (`miccal.py`), REW data |
 
 **Why not just EasyEffects or PipeWire's upmix?** They target standard layouts and sit outside the room correction; this rig is 5.1.2 with measured per-speaker delays, trims and EQ, so the upmixer is written as CamillaDSP blocks in front of that chain. The comparison, and what the upmixers do not do, is in the [linux-theater-dsp README](https://github.com/praveenchandrahas/linux-theater-dsp#how-this-differs-from-easyeffects-and-other-generic-upmixers-and-why-this-route).
 
@@ -184,7 +184,7 @@ Claim by claim in [docs/status.md](docs/status.md) (updated 2026-10-24). "Measur
 
 **Open:** a rattle or buzz in loud bass scenes. Praveen hears it as sub-cabinet rattle; steady tones at -14 dBFS do not
 reproduce it, and the Dolby Amaze recording shows no fixed 100 Hz line that would separate cabinet rattle from a room mode. In the hot sub run the recording peaks at the same level on eight tones, which points at a limit in the
-chain that has not been located. Next step is the same kit at a lower level and a different mic position, and at -8 and -3 dBFS ([tools/subtest](https://github.com/praveenchandrahas/theater-measurement/blob/main/tools/subtest/README.md)).
+chain that has not been located. Next step is the same kit at a lower level and a different mic position, and at -8 and -3 dBFS ([tools/subtest](https://github.com/praveenchandrahas/Roomtone/blob/main/tools/subtest/README.md)).
 
 ## Uncertainty
 
@@ -201,7 +201,7 @@ docs/        the documentation (start with architecture.md and runbook.md); docs
 scripts/     preflight (read-only health report), collect-versions.sh, clone-all.sh, test-all.sh
 tools/       the figure and diagram generators: make-graphs.py, make-recording-graphs.py, make-verification-figures.py,
              make-architecture-diagram.py, make-system-overview.py, build-writeup-page.py
-             (they read the other repositories: set-eq.py from linux-theater-dsp, REW data and analysers from theater-measurement)
+             (they read the other repositories: set-eq.py from linux-theater-dsp, REW data and analysers from Roomtone (formerly theater-measurement))
 ```
 
 Everything else (router, upmix engine, player installer, thumbnails, measurement kits) is in the repositories listed above.
