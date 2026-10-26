@@ -20,7 +20,7 @@ Search the docs for `TODO(owner)`. Checklist:
 - [ ] Bill of materials with sources and prices
 - [ ] CPU and latency of the live decode and render chain (the 4 % / 21 ms figures are for the upmix engine only)
 - [ ] Whether DTS:X works on this rig
-- [ ] Where the remux files come from, and a copyright note
+- [x] Where the remux files come from: deliberately not stated (owner's decision, 2026-10-26). The repositories distribute no media and no decoder binaries
 - [x] Microphone calibration file: provided, in `data/mic/` (belongs to one Dayton iMM-6S; not applied by the recording analysers, see data/README.md)
 - [ ] Mic position and playback level of the tests; projector fan state during the noise measurement
 - [ ] The licence of each dependency
@@ -33,7 +33,7 @@ From the end-to-end review of 2026-10-26 (what would most raise the project's qu
 - [ ] Repeat the key measurements on a second day (re-seat the mic) to get a real repeatability figure, and add one blind A/B listening comparison for the upmix and the heights tone-match
 - [ ] Separate room data from code: move the delay, trim and EQ constants out of `set-eq.py` into one config file, so another room only edits data
 - [ ] Add automatic checks (a CI job running `scripts/test-all.sh`, plus a check that the installed scripts match the repositories)
-- [ ] Decide what is public: the copyright and legal note for decoding Atmos/DTS:X and the source of the remux files
+- [x] What is public: decided 2026-10-26. The source of the remux files stays unstated on purpose; nothing is redistributed, because `object-audio-install.sh` pulls the harletty-bridge and Omniphony releases from their own repositories. The README line that still says "TODO: where the remux files come from" contradicts this and is the owner's to reword or drop
 - [ ] Review the repository count after a month (five now; the upmixers sit in `linux-theater-dsp`, the drift tracker in `theater-measurement`)
 - [ ] Re-run the analysers on the real recordings now that the microphone calibration file is applied (`tools/miccal.py`, default on), then update `docs/status.md`, the README numbers and the graphs; the published numbers were produced without it
 - [ ] Correct the calibration history in `data/README.md` and `docs/measurement.md`: on 2026-10-21 Claude asked for the iMM-6S file ("I can apply it myself") and applied it in the F1/Godzilla/Tenet band-energy analysis (the `drone2` verification in `docs/status.md`); the 2026-10-24 note that the recording analysers do not apply it is right only for the sweep, sub, delay, dialogue and reflection analysers. The one-off `rec_an.py` code of that analysis is not in the repo; if you still have those recordings, re-run them through `tools/miccal.py` too
@@ -46,7 +46,7 @@ From the end-to-end review of 2026-10-26 (what would most raise the project's qu
 - [ ] **autocal unknowns only the rig can settle:** real SNR and clipping margins, the `pw-record` / `pw-play --target camilladsp-capture` details (untested on hardware), the restart-and-relink path of `apply`, every pass/fail threshold (guesses), whether the 3 dB rms-to-target line is reachable (the simulation lands at about 3.8 dB), and whether it sounds right
 - [ ] **Install the updated router** (`linux-theater-dsp/scripts/install-autoroute.sh`) so the installed `set-eq.py` honours the live `~/.config/camilladsp/room.json` and DTS:X is recognised; `scripts/check-installed.sh` says when it is out of date
 - [ ] Possible later: status/control GUI (plan in `docs/plans/gui-plan.md`: `theater-ctld` daemon, `eq status --json`, optional mpv overlay; needs the CamillaDSP websocket decision above)
-- [ ] Confirm the licences of harletty-bridge and mpv-omniphony (not verified) before redistributing anything built from them
+- [ ] Confirm the licences of harletty-bridge and mpv-omniphony so the README's licence line is accurate (nothing built from them is redistributed: the installer fetches upstream releases)
 - [ ] Try the CI and `scripts/check-installed.sh` once the repositories are on GitHub (CI runs only on GitHub's servers; the check is read-only)
 - [ ] **Update the hand-installed `mpv-atmos`** (2026-10-26 preflight): the installed wrapper has no `--input-ipc-server` and does not call `eq prepare`, so the router cannot see Atmos/DTS:X in the codec profile when films start from it, and the DTS:X fix does nothing there. The repository copy has both and otherwise matches the installed one flag for flag. `check-installed.sh --diff` first, then `install -m 755 <workspace>/mpv-object-audio/scripts/mpv-atmos ~/.local/bin/mpv-atmos`
 - [ ] **Install the updated router and `set-eq.py`** (`linux-theater-dsp/scripts/install-autoroute.sh`) and then `systemctl --user restart theater-router`, because `enable --now` does not restart a service that is already running. Do it when nothing is playing
