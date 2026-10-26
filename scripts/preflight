@@ -185,12 +185,51 @@ fi
 systemctl --user is-active seekthumbs.service 2>&1 | sed 's/^/   seekthumbs.service: /'
 echo "-- seekthumbs.py status:"; [ -f "$WS/seekthumbs/seekthumbs.py" ] && python3 "$WS/seekthumbs/seekthumbs.py" status 2>&1 | head -8 | sed 's/^/   /'
 
+sec "autocal (room calibration), read-only checks"
+MEAS="$WS/theater-measurement"
+if [ -d "$MEAS/autocal" ]; then
+    ok "autocal found in $MEAS/autocal"
+    python3 -I - <<'E' 2>&1
+for m in ("numpy", "scipy"):
+    try:
+        __import__(m); print("OK   ", "python", m)
+    except ImportError:
+        print("WARN  python", m, "missing (autocal needs numpy and scipy)")
+E
+    SE="$WS/linux-theater-dsp/scripts/set-eq.py"
+    if [ -f "$SE" ]; then
+        grep -q -- "--write-config" "$SE" && ok "set-eq.py supports --room / --write-config (autocal needs both)" || warn "set-eq.py is older than autocal expects (no --write-config)"
+        INSTALLED="$HOME/.local/bin/set-eq.py"
+        [ -f "$INSTALLED" ] && { grep -q -- "--write-config" "$INSTALLED" && ok "installed set-eq.py supports --room" || warn "installed set-eq.py is older: re-run install-autoroute.sh so the live room.json is honoured"; }
+    else
+        warn "set-eq.py not found in $WS/linux-theater-dsp (clone-all.sh)"
+    fi
+    ROOM="$HOME/.config/camilladsp/room.json"
+    [ -f "$ROOM" ] && { echo "   live room file: $ROOM ($(stat -c %y "$ROOM" | cut -c1-16)); set-eq.py reads it implicitly (--no-room ignores it)"; python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$ROOM" 2>/dev/null && ok "live room.json is valid JSON" || warn "live room.json is not valid JSON: set-eq.py will refuse to run until it is fixed or removed"; } || echo "   no live room file (the built-in numbers in set-eq.py apply): normal until the first 'autocal apply'"
+    ls "${AUTOCAL_BACKUP_DIR:-$HOME/.local/share/autocal/backups}" >/dev/null 2>&1 && echo "   backups: $(ls "${AUTOCAL_BACKUP_DIR:-$HOME/.local/share/autocal/backups}" | wc -l) in ~/.local/share/autocal/backups (autocal rollback restores the latest)"
+    RUNS="${AUTOCAL_RUNS_DIR:-$MEAS/runs}"
+    if [ -d "$RUNS" ]; then
+        last=$(ls -1 "$RUNS" 2>/dev/null | tail -1)
+        [ -n "$last" ] && [ -f "$RUNS/$last/results.json" ] && python3 -c "
+import json,sys
+r=json.load(open(sys.argv[1])); print('   last run:', r.get('id'), r.get('mode'), 'simulated' if r.get('simulated') else 'real', 'verdict', r.get('verdict'))" "$RUNS/$last/results.json" 2>/dev/null
+    fi
+    for t in pw-play pw-record; do have "$t" && ok "$t" || warn "$t missing (a real run needs it)"; done
+    PTC=$(command -v play-through-camilla.sh || ls "$HOME/bin/play-through-camilla.sh" "$HOME/.local/bin/play-through-camilla.sh" 2>/dev/null | head -1)
+    [ -n "$PTC" ] && ok "play-through-camilla.sh found ($PTC)" || warn "play-through-camilla.sh not found on PATH, ~/bin or ~/.local/bin (verification plays through it; see the todo)"
+    CWS=$(grep -E "^ExecStart" "$HOME/.config/systemd/user/camilladsp.service" 2>/dev/null | head -1)
+    case "$CWS" in *" -p "*) ok "CamillaDSP websocket enabled in the unit ($CWS)";; "") warn "no camilladsp.service ExecStart found";; *) echo "   CamillaDSP websocket not enabled (optional; see docs/todo-fill-in.md)";; esac
+    echo "   (this section only reads; start the GUI with: cd $MEAS && python3 -m autocal.web)"
+else
+    echo "autocal not present in $MEAS (it comes with a later update of theater-measurement)"
+fi
+
 sec "services"
-for u in pipewire wireplumber pipewire-pulse linux-theater-dsp theater-upmix; do echo "$u: $(systemctl --user is-active $u 2>&1)"; done
+for u in pipewire wireplumber pipewire-pulse theater-router theater-upmix; do echo "$u: $(systemctl --user is-active $u 2>&1)"; done
 systemctl --user list-units --type=service --no-legend 2>/dev/null | grep -i camilla
 echo "rtkit-daemon: $(systemctl is-active rtkit-daemon 2>&1); RLIMIT_RTPRIO: $(ulimit -r)"
 N=15 run journalctl --user -u theater-upmix -n 15 --no-pager
-N=10 run journalctl --user -u linux-theater-dsp -n 10 --no-pager
+N=10 run journalctl --user -u theater-router -n 10 --no-pager
 
 sec "USB DAC (Vantec)"
 if lsusb 2>/dev/null | grep -qi 0d8c; then ok "USB device 0d8c present"; lsusb | grep -i 0d8c; else warn "no USB device 0d8c: is the DAC connected?"; fi

@@ -8,7 +8,7 @@
 | Hear it without any DSP | `eq off` (all EQ, delays and trims bypassed). `eq on` to come back. |
 | See what is happening | `eq status` |
 | Change the preset | `./scripts/set-eq.py --set=drone2 --align=bed` (see list below) |
-| Look at the router's log | `journalctl --user -u linux-theater-dsp -f` |
+| Look at the router's log | `journalctl --user -u theater-router -f` |
 | Look at CamillaDSP's log | `journalctl --user -u camilladsp -n 50 --no-pager` |
 
 `eq status` prints the switch state, whether the router and CamillaDSP services are active, which preset is on
