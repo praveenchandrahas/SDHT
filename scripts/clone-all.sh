@@ -7,9 +7,9 @@ OWNER="${SDHT_OWNER:-praveenchandrahas}"
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 TARGET="${1:-$(dirname "$HERE")}"
 mkdir -p "$TARGET"
-for r in sdht linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
-  if [ "$r" = "$(basename "$HERE")" ] || [ -d "$TARGET/$r/.git" ]; then
-    d="$TARGET/$r"; [ "$r" = "$(basename "$HERE")" ] && d="$HERE"
+for r in SDHT linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
+  if [ "${r,,}" = "$(basename "$HERE" | tr A-Z a-z)" ] || [ -d "$TARGET/$r/.git" ]; then
+    d="$TARGET/$r"; [ "${r,,}" = "$(basename "$HERE" | tr A-Z a-z)" ] && d="$HERE"
     echo "== $r: updating"; git -C "$d" pull --ff-only || echo "   (could not fast-forward; left as is)"
   else
     echo "== $r: cloning"; git clone "https://github.com/$OWNER/$r" "$TARGET/$r"
