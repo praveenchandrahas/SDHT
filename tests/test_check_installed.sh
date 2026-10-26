@@ -24,6 +24,14 @@ ck "a missing script is reported as MISSING" "$(echo "$out" | grep -q 'upmix.py 
 rm "$WS/mpv-object-audio/scripts/mpv-atmos"
 out=$(run)
 ck "a script missing from the repository is reported as NO-REPO" "$(echo "$out" | grep -q 'mpv-atmos *NO-REPO' && echo ok)"
+# comments-only difference is labelled, and a long diff says how much was cut
+cp "$WS/linux-theater-dsp/scripts/set-eq.py" "$BIN/set-eq.py"; echo "# a new comment" >> "$WS/linux-theater-dsp/scripts/set-eq.py"
+out=$(run); ck "a comment-only difference is still DIFFERS but says so" "$(echo "$out" | grep -q 'set-eq.py *DIFFERS.*comments/blank lines only' && echo ok)"
+cp "$WS/linux-theater-dsp/scripts/set-eq.py" "$BIN/set-eq.py"; echo "real change" >> "$BIN/set-eq.py"
+out=$(run); ck "a real change is not labelled comment-only" "$(echo "$out" | grep -q 'set-eq.py *DIFFERS' && ! echo "$out" | grep 'set-eq.py' | grep -q 'comments/blank' && echo ok)"
+seq 1 120 > "$WS/linux-theater-dsp/scripts/set-eq.py"; out=$(run --diff)
+ck "a long --diff reports the lines it did not show" "$(echo "$out" | grep -q 'more diff line(s) not shown' && echo ok)"
+echo "repo set-eq.py" > "$WS/linux-theater-dsp/scripts/set-eq.py"; cp "$WS/linux-theater-dsp/scripts/set-eq.py" "$BIN/set-eq.py"
 # read-only: restore the two edits we made on purpose, then nothing may differ from the first snapshot
 cp "$WS/linux-theater-dsp/scripts/set-eq.py" "$BIN/set-eq.py"; cp "$WS/linux-theater-dsp/scripts/upmix.py" "$BIN/upmix.py"; echo "repo mpv-atmos" > "$WS/mpv-object-audio/scripts/mpv-atmos"
 run >/dev/null; run --diff >/dev/null

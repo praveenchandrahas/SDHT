@@ -215,8 +215,8 @@ import json,sys
 r=json.load(open(sys.argv[1])); print('   last run:', r.get('id'), r.get('mode'), 'simulated' if r.get('simulated') else 'real', 'verdict', r.get('verdict'))" "$RUNS/$last/results.json" 2>/dev/null
     fi
     for t in pw-play pw-record; do have "$t" && ok "$t" || warn "$t missing (a real run needs it)"; done
-    PTC=$(command -v play-through-camilla.sh || ls "$HOME/bin/play-through-camilla.sh" "$HOME/.local/bin/play-through-camilla.sh" 2>/dev/null | head -1)
-    [ -n "$PTC" ] && ok "play-through-camilla.sh found ($PTC)" || warn "play-through-camilla.sh not found on PATH, ~/bin or ~/.local/bin (verification plays through it; see the todo)"
+    PTC=$(command -v play-through-camilla.sh || ls "$MEAS/scripts/play-through-camilla.sh" "$HOME/bin/play-through-camilla.sh" "$HOME/.local/bin/play-through-camilla.sh" 2>/dev/null | head -1)
+    [ -n "$PTC" ] && ok "play-through-camilla.sh found ($PTC)" || warn "play-through-camilla.sh not found (it is in theater-measurement/scripts; the older measurement tools run it from there)"
     CWS=$(grep -E "^ExecStart" "$HOME/.config/systemd/user/camilladsp.service" 2>/dev/null | head -1)
     case "$CWS" in *" -p "*) ok "CamillaDSP websocket enabled in the unit ($CWS)";; "") warn "no camilladsp.service ExecStart found";; *) echo "   CamillaDSP websocket not enabled (optional; see docs/todo-fill-in.md)";; esac
     echo "   (this section only reads; start the GUI with: cd $MEAS && python3 -m autocal.web)"

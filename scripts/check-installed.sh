@@ -18,8 +18,17 @@ row() {   # row LABEL INSTALLED REPOFILE UPDATE-HINT
   if [ ! -e "$inst" ]; then printf '%-24s MISSING    (not installed: %s)\n             to install: %s\n' "$label" "$inst" "$hint"; bad=1; return; fi
   if cmp -s "$inst" "$repo"; then printf '%-24s identical\n' "$label"
   else
-    printf '%-24s DIFFERS    (%s)\n             to update: %s\n' "$label" "$inst" "$hint"; bad=1
-    [ "$SHOWDIFF" = 1 ] && diff -u "$inst" "$repo" | head -40 | sed 's/^/             | /'
+    # comments and blank lines only? (a leading "#!" line is behaviour and counts)
+    local note=""
+    if diff -q <(grep -v -E '^[[:space:]]*(#[^!].*)?$' "$inst") <(grep -v -E '^[[:space:]]*(#[^!].*)?$' "$repo") >/dev/null 2>&1; then
+      note="  comments/blank lines only, no difference in behaviour"
+    fi
+    printf '%-24s DIFFERS    (%s)%s\n             to update: %s\n' "$label" "$inst" "$note" "$hint"; bad=1
+    if [ "$SHOWDIFF" = 1 ]; then
+      local d total; d=$(diff -u "$inst" "$repo"); total=$(printf '%s\n' "$d" | wc -l)
+      printf '%s\n' "$d" | head -40 | sed 's/^/             | /'
+      [ "$total" -gt 40 ] && printf '             | ... %d more diff line(s) not shown; see them all with:  diff -u %s %s\n' "$((total - 40))" "$inst" "$repo"
+    fi
   fi
 }
 R="$WS/linux-theater-dsp/scripts"; M="$WS/mpv-object-audio/scripts"
@@ -28,7 +37,7 @@ row theater-route        "$BIN/theater-route"      "$R/theater-route"      "$UP"
 row set-eq.py            "$BIN/set-eq.py"          "$R/set-eq.py"          "$UP"
 row upmix.py             "$BIN/upmix.py"           "$R/upmix.py"           "$UP"
 row upmix_engine.py      "$BIN/upmix_engine.py"    "$R/upmix_engine.py"    "$UP"
-row mpv-object-audio     "$BIN/mpv-object-audio"   "$M/mpv-object-audio"   "cd $WS/mpv-object-audio && ./scripts/object-audio-install.sh"
+row mpv-object-audio     "$BIN/mpv-object-audio"   "$M/mpv-object-audio"   "install -m 755 $M/mpv-object-audio $BIN/mpv-object-audio   (just the wrapper; cd $WS/mpv-object-audio && ./scripts/object-audio-install.sh also updates the engine, bridges and menus)"
 row mpv-atmos            "$BIN/mpv-atmos"          "$M/mpv-atmos"          "install -m 755 $M/mpv-atmos $BIN/mpv-atmos   (this wrapper is hand-installed; compare it first with --diff)"
 if [ -e "$BIN/eq" ]; then
   n=$((n + 1)); if [ "$(readlink "$BIN/eq" 2>/dev/null)" = "theater-route" ]; then printf '%-24s identical    (symlink to theater-route)\n' "eq"; else printf '%-24s DIFFERS    (not a symlink to theater-route)\n' "eq"; bad=1; fi
