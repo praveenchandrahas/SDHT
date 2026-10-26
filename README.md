@@ -1,3 +1,5 @@
+![Software-Defined Home Theatre: mpv with object audio, Omniphony, PipeWire, CamillaDSP and a 7.1 USB DAC driving a 5.1.2 room](docs/img/cover.png)
+
 # Software-defined home theatre (Linux, Atmos 5.1.2)
 
 **At a glance.** A Linux laptop decodes Dolby Atmos files live and renders the objects to a 5.1.2 speaker layout; a Logitech Z906 plus
