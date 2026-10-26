@@ -45,6 +45,10 @@ if [ -e "$BIN/eq" ]; then
 fi
 [ -f "$WS/seekthumbs/thumbfast.lua" ] && [ -e "$MPVCONF/scripts/thumbfast.lua" ] && row "seekthumbs viewer" "$MPVCONF/scripts/thumbfast.lua" "$WS/seekthumbs/thumbfast.lua" "cd $WS/seekthumbs && ./seekthumbs.py install-viewer"
 # optional parts: only checked once they are installed
+for c in "$MPVCONF" "$HOME/.config/mpv"; do
+  [ -f "$WS/mpv-shelf/shelf.lua" ] && [ -e "$c/scripts/shelf.lua" ] && row "mpv-shelf script" "$c/scripts/shelf.lua" "$WS/mpv-shelf/shelf.lua" "cd $WS/mpv-shelf && ./install-shelf.sh"
+done
+[ -f "$WS/mpv-shelf/shelf-index" ] && [ -e "$BIN/shelf-index" ] && row "shelf-index" "$BIN/shelf-index" "$WS/mpv-shelf/shelf-index" "cd $WS/mpv-shelf && ./install-shelf.sh"
 if [ -e "$BIN/theater-ctld" ]; then
   row theater-ctld      "$BIN/theater-ctld"                         "$WS/$RT/gui/theater-ctld"                          "cd $WS/$RT/gui && ./install-ctld.sh"
   row "ctld web page"   "$HOME/.local/share/theater-ctld/index.html" "$WS/$RT/gui/index.html"    "cd $WS/$RT/gui && ./install-ctld.sh"
@@ -54,7 +58,7 @@ for c in "$MPVCONF" "$HOME/.config/mpv"; do
 done
 echo
 echo "repository state (local only, no network):"
-for r in UMBRELLA linux-theater-dsp mpv-object-audio seekthumbs $RT; do
+for r in UMBRELLA linux-theater-dsp mpv-object-audio seekthumbs mpv-shelf $RT; do
   d="$WS/$r"; [ "$r" = UMBRELLA ] && d="$HERE"
   if [ -d "$d/.git" ]; then
     dirty=$(git -C "$d" status --porcelain 2>/dev/null | wc -l)

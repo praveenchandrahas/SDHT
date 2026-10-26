@@ -16,15 +16,16 @@ largest layout used here** (7.1.4 and 5.1.4 are deliberately not used).
 
 ## The repositories
 
-The project started as one repository and was split into five repositories on 2026-10-25 (history preserved in each). This one, **sdht**, is the front door: the build log, documentation, results and graphs.
+The project started as one repository and was split into five repositories on 2026-10-25 (history preserved in each); a sixth, **mpv-shelf**, was added on 2026-10-26. This one, **sdht**, is the front door: the build log, documentation, results and graphs.
 
 | Repository | What it is |
 |---|---|
 | **[sdht](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh` / `check-installed.sh`, the figure scripts |
 | **[linux-theater-dsp](https://github.com/praveenchandrahas/linux-theater-dsp)** | `eq` / `theater-route` (PipeWire routing), `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the stereo and 5.1-bed upmixers (`upmix.py`), the adaptive ambience engine (`upmix_engine.py`) with its offline test harness (`tools/upmixtest`), the systemd units, router tests |
 | **[mpv-object-audio](https://github.com/praveenchandrahas/mpv-object-audio)** | installer and wrapper for the live Atmos / DTS:X player (Omniphony, harletty-bridge, patched mpv) |
-| **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | background seek-bar thumbnails for an rclone library, and the mpv viewer script |
-| **[Roomtone](https://github.com/praveenchandrahas/Roomtone)** | test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison, second-sub drift), microphone calibration (`miccal.py`), REW data |
+| **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | seek-bar thumbnails for a read-only film library (an rclone or debrid mount): built when you play a film (or as a batch), one set shared by the releases of a film, and the mpv viewer script |
+| **[mpv-shelf](https://github.com/praveenchandrahas/mpv-shelf)** | a Netflix-style film browser inside mpv (poster grid, Continue Watching, search, title pages) over the same library folder; plays by file path |
+| **[Roomtone](https://github.com/praveenchandrahas/Roomtone)** | `autocal` (measure the room through CamillaDSP and propose a correction), test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison, second-sub drift), microphone calibration (`miccal.py`), REW data, the local control page (live per-speaker levels on a 5.1.2 plan, EQ and profile controls, an autocal page) and the mpv status overlay (key **C**) |
 
 **Why not just EasyEffects or PipeWire's upmix?** They target standard layouts and sit outside the room correction; this rig is 5.1.2 with measured per-speaker delays, trims and EQ, so the upmixer is written as CamillaDSP blocks in front of that chain. The comparison, and what the upmixers do not do, is in the [linux-theater-dsp README](https://github.com/praveenchandrahas/linux-theater-dsp#how-this-differs-from-easyeffects-and-other-generic-upmixers-and-why-this-route).
 
@@ -223,7 +224,9 @@ mpv-object-audio film.mkv                   # or right-click a film in Dolphin -
 
 Everything goes into `~/.local/opt/mpv-object-audio`; the installer stops, and installs no command, unless the new mpv loads the engine. Re-running it updates to the latest releases. [`mpv-object-audio`](https://github.com/praveenchandrahas/mpv-object-audio/tree/main/scripts/mpv-object-audio) carries the video settings described under [The `mpv-atmos` command](#the-mpv-atmos-command) and is independent of `mpv-atmos`. The installer also adds a Dolphin right-click submenu (play, fullscreen, play with log, show streams) and an "Open with" entry. `scripts/object-audio-install.sh status` and `remove` do what they say. Details and caveats: [docs/installation.md](docs/installation.md#mpv-object-audio-the-omniphony-player-stack-2026-10-25).
 
-**Optional: seek-bar thumbnails for an rclone library.** [seekthumbs](https://github.com/praveenchandrahas/seekthumbs) builds small preview thumbnails for every film in the background (conservative with cloud API limits, at most 10 MB per 2 hours, kept in a local folder) and a replacement `thumbfast.lua` shows them on the mpv seek bar without opening the film a second time. Setup and caveats are in its README.
+**Optional: seek-bar thumbnails for a film library.** [seekthumbs](https://github.com/praveenchandrahas/seekthumbs) makes small preview thumbnails (about 1 MB per film at the default size, kept in a local folder) and a replacement `thumbfast.lua` shows them on the mpv seek bar without opening the film a second time. It builds them when you first play a film (gently, next to the playback) or as a batch; releases of the same film share one set, and `skip_tv` / `exclude` leave out what you do not want. On a debrid mount a 4K remux needed about 17 minutes to build under the mount's rate limits, so building on play is the practical mode there. The viewer has so far been run only against a mocked mpv, not in real mpv with uosc. Setup and caveats are in its README.
+
+**Optional: a film browser in mpv.** [mpv-shelf](https://github.com/praveenchandrahas/mpv-shelf) (Ctrl+b) browses the same library folder as a poster grid with Continue Watching, search and title pages (posters and synopses from TMDB with your own free key; works without), groups releases into one card per film, and plays by file path so seekthumbs and the Atmos wrapper keep working. Version 1; like the viewer above it has only been tested against a mocked mpv.
 
 **2. The DSP and routing: CamillaDSP profile, router and the `eq` command.**
 
@@ -258,7 +261,7 @@ The tuning decisions, measurements, listening tests and the build itself are Pra
 (TODO: which scripts, if any, predate that). This includes the code that produces the numbers: the sweep, sub, dialogue (STI) and reflection analysers and the rattle detector. It has been checked against simulated rooms and against the REW exports,
 not independently validated.
 
-**Licence: [Apache License 2.0](LICENSE)**, for all five repositories. It lets anyone use, change and redistribute the work, including commercially, and it carries an explicit patent grant and a "no warranty" clause. Most of the project is integration of other people's software
+**Licence: [Apache License 2.0](LICENSE)**, for all six repositories. It lets anyone use, change and redistribute the work, including commercially, and it carries an explicit patent grant and a "no warranty" clause. Most of the project is integration of other people's software
 (Omniphony, truehdd, CamillaDSP, PipeWire, mpv, ffmpeg and others); those keep their own licences and are not relicensed by this one. Where this project's code is combined with GPL software (Omniphony, CamillaDSP, mpv are GPL), the combined program you run is GPL-covered,
 but nothing in these repositories copies their code, so Apache-2.0 for the scripts is consistent. A third-party table is in the [mpv-object-audio README](https://github.com/praveenchandrahas/mpv-object-audio#licences-of-what-it-installs). Licences of harletty-bridge and mpv-omniphony are not yet verified.
 Dolby, Dolby Atmos, DTS and DTS:X are trademarks of their owners; this project is not affiliated with or endorsed by them, and contains no copyrighted films, decoders or encoded media.

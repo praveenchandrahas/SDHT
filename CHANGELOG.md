@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-26 (evening)
+- **Roomtone control page:** live sound field (per-speaker levels of the 8 outputs on a 5.1.2 plan, after EQ, from CamillaDSP at 20 Hz), a redesigned page, and an **autocal page** (live run, prompts, stop, start from a fixed list of runs, apply with confirmations; never changes the safety limits). Checked against a simulated CamillaDSP and, for the levels, on the rig.
+- **autocal:** a 20 s silent recording before and after every position is the noise reference for the 40 Hz SNR (kept in `raw/`); the sub second-harmonic stop needs 0.6 s of persistence (or -6 dBc at once) and saves the last 2 s of the mic when it stops. Limit (-20 dBc) and the -20 dBFS cap unchanged. An open question: the new reference and the in-sweep estimate disagree by about 11 dB on one run (22 vs 11 dB).
+- **mpv overlay installer:** fixed a bug that wrote the terminal height (`42`) into input.conf instead of the key line (a bash variable named LINES).
+- **seekthumbs:** builds when you play a film (`build FILE`, started by the viewer), one set shared by releases of a film (aliases), `skip_tv` / `exclude`, decode errors on a flaky mount count as failed reads (retried), `verify --deep`. On the owner's debrid mount PyAV read 9.8 MB per thumbnail against 62.7 MB for the ffmpeg command.
+- **mpv-shelf** (new repository): film browser for mpv over the library folder. Version 1, tested against a mocked mpv only.
+
 ## 2026-10-26: Roomtone
 - `theater-measurement` renamed **Roomtone** on GitHub (history kept, old address redirects). The status page (`theater-ctld`, `web/`) moved in from linux-theater-dsp as `gui/`, the mpv overlay from mpv-object-audio as `overlay/`; the router and the CamillaDSP generator stay in linux-theater-dsp.
 - mpv overlay: one **C** key opens the status and the controls together; each control row shows its current value.
