@@ -240,9 +240,8 @@ Not yet recorded, so not stated here (the checklist is [docs/todo-fill-in.md](do
 - TODO: bill of materials with sources and prices, the media-library mount and the laptop-to-projector HDMI path.
 - TODO: CPU and latency of the live decode and render chain (the 4 % and 21 ms figures are for the upmix engine only).
 - TODO: whether DTS:X works on this rig (harletty-bridge advertises DTS and DTS:X input; it has not been tested here).
-- TODO: where the remux files come from, and a note on copyright.
 - TODO: microphone calibration file, mic position and playback level of the tests; projector fan state during the noise measurement.
-- TODO: the licence of each dependency (not checked), and which scripts predate the October working sessions.
+- TODO: which scripts predate the October working sessions.
 
 The checks still to do at the rig are in [docs/status.md](docs/status.md#checks-still-to-do).
 
