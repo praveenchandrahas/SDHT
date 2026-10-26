@@ -117,7 +117,7 @@ for m in ("numpy", "scipy", "yaml"):
 E
 
 sec "installed scripts match the repository"
-SD="${SDHT:-$HOME/SDHT}"; [ -d "$SD/scripts" ] || SD="$HOME/sdht"
+SD="${SDHT:-$(dirname "$(dirname "$(readlink -f "$0")")")}"      # this repository, wherever it was cloned and whatever the folder is called
 WS="${SDHT_WORKSPACE:-$(dirname "$SD")}"      # the project's repositories are cloned side by side (scripts/clone-all.sh)
 CI="$(dirname "$(readlink -f "$0")")/check-installed.sh"
 if [ -d "$WS/linux-theater-dsp" ] || [ -d "$WS/mpv-object-audio" ]; then

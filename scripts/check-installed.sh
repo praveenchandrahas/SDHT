@@ -36,11 +36,11 @@ fi
 [ -f "$WS/seekthumbs/thumbfast.lua" ] && [ -e "$MPVCONF/scripts/thumbfast.lua" ] && row "seekthumbs viewer" "$MPVCONF/scripts/thumbfast.lua" "$WS/seekthumbs/thumbfast.lua" "cd $WS/seekthumbs && ./seekthumbs.py install-viewer"
 echo
 echo "repository state (local only, no network):"
-for r in SDHT linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
-  d="$WS/$r"; [ "$r" = SDHT ] && d="$HERE"
+for r in UMBRELLA linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
+  d="$WS/$r"; [ "$r" = UMBRELLA ] && d="$HERE"
   if [ -d "$d/.git" ]; then
     dirty=$(git -C "$d" status --porcelain 2>/dev/null | wc -l)
-    printf '  %-20s %s  %s%s\n' "$r" "$(git -C "$d" log -1 --format='%h %cs' 2>/dev/null)" "$([ "$dirty" -gt 0 ] && echo "$dirty uncommitted change(s)" || echo clean)" "$(git -C "$d" status -sb 2>/dev/null | head -1 | grep -oE '\[(ahead|behind)[^]]*\]' | sed 's/^/  /')"
+    printf '  %-20s %s  %s%s\n' "$([ "$r" = UMBRELLA ] && basename "$HERE" || echo "$r")" "$(git -C "$d" log -1 --format='%h %cs' 2>/dev/null)" "$([ "$dirty" -gt 0 ] && echo "$dirty uncommitted change(s)" || echo clean)" "$(git -C "$d" status -sb 2>/dev/null | head -1 | grep -oE '\[(ahead|behind)[^]]*\]' | sed 's/^/  /')"
   else
     printf '  %-20s not found in %s\n' "$r" "$WS"
   fi

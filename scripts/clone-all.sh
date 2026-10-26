@@ -7,10 +7,10 @@ OWNER="${SDHT_OWNER:-praveenchandrahas}"
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 TARGET="${1:-$(dirname "$HERE")}"
 mkdir -p "$TARGET"
-for r in SDHT linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
-  if [ "${r,,}" = "$(basename "$HERE" | tr A-Z a-z)" ] || [ -d "$TARGET/$r/.git" ]; then
-    d="$TARGET/$r"; [ "${r,,}" = "$(basename "$HERE" | tr A-Z a-z)" ] && d="$HERE"
-    echo "== $r: updating"; git -C "$d" pull --ff-only || echo "   (could not fast-forward; left as is)"
+echo "== this repository ($(basename "$HERE")): updating"; git -C "$HERE" pull --ff-only || echo "   (could not fast-forward; left as is)"
+for r in linux-theater-dsp mpv-object-audio seekthumbs theater-measurement; do
+  if [ -d "$TARGET/$r/.git" ]; then
+    echo "== $r: updating"; git -C "$TARGET/$r" pull --ff-only || echo "   (could not fast-forward; left as is)"
   else
     echo "== $r: cloning"; git clone "https://github.com/$OWNER/$r" "$TARGET/$r"
   fi

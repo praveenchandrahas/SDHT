@@ -18,7 +18,7 @@ The project started as one repository and was split into five repositories on 20
 
 | Repository | What it is |
 |---|---|
-| **[sdht](https://github.com/praveenchandrahas/SDHT)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh` / `check-installed.sh`, the figure scripts |
+| **[sdht](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh` / `check-installed.sh`, the figure scripts |
 | **[linux-theater-dsp](https://github.com/praveenchandrahas/linux-theater-dsp)** | `eq` / `theater-route` (PipeWire routing), `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the stereo and 5.1-bed upmixers (`upmix.py`), the adaptive ambience engine (`upmix_engine.py`) with its offline test harness (`tools/upmixtest`), the systemd units, router tests |
 | **[mpv-object-audio](https://github.com/praveenchandrahas/mpv-object-audio)** | installer and wrapper for the live Atmos / DTS:X player (Omniphony, harletty-bridge, patched mpv) |
 | **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | background seek-bar thumbnails for an rclone library, and the mpv viewer script |
@@ -207,7 +207,7 @@ Two steps cover the software. Start from Kubuntu 24.04 (or another Ubuntu 24.04 
 **1. The player: Omniphony, harletty-bridge and mpv-omniphony, as the `mpv-object-audio` command.**
 
 ```bash
-git clone https://github.com/praveenchandrahas/SDHT && ./sdht/scripts/clone-all.sh     # all repositories, side by side
+git clone https://github.com/praveenchandrahas/Software-Defined-Home-Theatre && ./sdht/scripts/clone-all.sh     # all repositories, side by side
 cd mpv-object-audio
 ./scripts/object-audio-install.sh deps      # prints one apt line (mpv's build dependencies); run what it prints
 ./scripts/object-audio-install.sh           # the engine and the decoder bridges are downloaded as prebuilt releases;
