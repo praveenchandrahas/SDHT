@@ -52,6 +52,13 @@ done
 if [ -e "$BIN/theater-ctld" ]; then
   row theater-ctld      "$BIN/theater-ctld"                         "$WS/$RT/gui/theater-ctld"                          "cd $WS/$RT/gui && ./install-ctld.sh"
   row "ctld web page"   "$HOME/.local/share/theater-ctld/index.html" "$WS/$RT/gui/index.html"    "cd $WS/$RT/gui && ./install-ctld.sh"
+  if command -v systemctl >/dev/null 2>&1; then              # does the page start with the system? (read-only: only asks systemd)
+    n=$((n + 1)); en=$(systemctl --user is-enabled theater-ctld.service 2>/dev/null)
+    if [ "$en" = enabled ]; then printf '%-24s enabled (starts with your desktop session)\n' "ctld autostart"
+    else printf '%-24s NOT ENABLED (%s)\n             to enable: systemctl --user enable --now theater-ctld.service\n' "ctld autostart" "${en:-unknown}"; bad=1; fi
+    lg=$(loginctl show-user "${USER:-$(id -un)}" -p Linger --value 2>/dev/null)
+    [ "$lg" = no ] && printf '%-24s linger is off: services start when you log in to the desktop; for boot without a login: loginctl enable-linger %s\n' "" "${USER:-$(id -un)}"
+  fi
 fi
 for c in "$MPVCONF" "$HOME/.config/mpv"; do
   [ -e "$c/scripts/theater_status.lua" ] && row "mpv status overlay" "$c/scripts/theater_status.lua" "$WS/$RT/overlay/theater_status.lua" "cd $WS/$RT/overlay && ./install-theater-status.sh --bindings"
