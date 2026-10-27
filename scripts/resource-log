@@ -1,0 +1,337 @@
+#!/usr/bin/env python3
+"""resource-log: record what the home-theatre components cost while a film plays (CPU, RAM, GPU, PipeWire load), standard library only.
+
+  scripts/resource-log                      sample every 1 s until Ctrl+C (start it, then start the film)
+  scripts/resource-log --seconds 600        stop after 10 minutes
+  scripts/resource-log --label atmos-4k     name the run (goes into the folder name and the summary)
+  scripts/resource-log --add name=REGEX     one more component (REGEX is matched against the command line)
+
+Writes a folder (default ~/resource-log/<time>-<label>/) with samples.csv, summary.md, environment.txt and pw-top.log.
+Read-only: it reads /proc, /sys and runs pw-top / nvidia-smi / intel_gpu_top if they exist. It changes nothing and needs no root.
+
+What it measures, and what it does not:
+- CPU per component, as % of ONE core (200 = two cores busy), summed over every process of the component; RAM as resident set size (RSS).
+- Whole-computer CPU %, RAM used, and GPU busy % / VRAM where the computer offers them (AMD: sysfs; NVIDIA: nvidia-smi; Intel: intel_gpu_top,
+  which usually needs root, otherwise GPU is reported as not measured). GPU figures are for the whole GPU, not per process.
+- PipeWire: the raw `pw-top` output every 5 s (pw-top.log) and, best effort, the sum of its ERR column (xruns) with its change over the run.
+- It does NOT measure end-to-end audio latency. It records the configured settings that set the latency (PipeWire quantum and rate, CamillaDSP
+  chunksize) in environment.txt; those are settings, not a measurement. A real latency number needs a loopback or a click-and-flash test.
+- harletty-bridge and the Omniphony engine run inside mpv as libraries, so their cost is part of the `mpv` component, not a separate line.
+"""
+import argparse
+import csv
+import glob
+import os
+import re
+import shutil
+import signal
+import statistics
+import subprocess
+import sys
+import threading
+import time
+from datetime import datetime
+
+COMPONENTS = [                     # name, regex matched against "comm" or the full command line
+    ("mpv", r"^(mpv|mpv-omniphony)$|/mpv(-omniphony)?( |$)"),
+    ("camilladsp", r"camilladsp"),
+    ("pipewire", r"^pipewire$"),
+    ("wireplumber", r"wireplumber"),
+    ("pipewire-pulse", r"pipewire-pulse"),
+    ("router", r"theater-route"),
+    ("upmix-engine", r"upmix_engine"),
+    ("omniphony-studio", r"omniphony.studio"),
+    ("harletty", r"harletty"),
+    ("theater-ctld", r"theater-ctld"),
+    ("seekthumbs", r"seekthumbs\.py"),
+]
+HZ = os.sysconf("SC_CLK_TCK")
+PAGE = os.sysconf("SC_PAGE_SIZE")
+DRM = os.environ.get("RESOURCE_LOG_DRM", "/sys/class/drm")
+
+
+def read(path, default=""):
+    try:
+        with open(path, errors="replace") as f:
+            return f.read()
+    except OSError:
+        return default
+
+
+def proc_table():
+    """pid -> (comm, cmdline, cpu_ticks, rss_bytes, threads)"""
+    out = {}
+    for d in glob.glob("/proc/[0-9]*"):
+        pid = d.rsplit("/", 1)[1]
+        stat = read(d + "/stat")
+        if not stat:
+            continue
+        try:
+            rp = stat.rindex(")")
+            comm = stat[stat.index("(") + 1:rp]
+            f = stat[rp + 2:].split()
+            ticks = int(f[11]) + int(f[12])            # utime + stime
+            threads = int(f[17])
+            rss = int(f[21]) * PAGE
+        except (ValueError, IndexError):
+            continue
+        cmd = read(d + "/cmdline").replace("\0", " ").strip()
+        out[pid] = (comm, cmd, ticks, rss, threads)
+    return out
+
+
+def classify(table, comps):
+    groups = {name: [] for name, _ in comps}
+    me = str(os.getpid())
+    for pid, (comm, cmd, *_rest) in table.items():
+        if pid == me or "resource-log" in cmd:
+            continue
+        for name, rx in comps:
+            if re.search(rx, comm) or re.search(rx, cmd):
+                groups[name].append(pid)
+                break
+    return groups
+
+
+def cpu_total():
+    f = read("/proc/stat").split("\n", 1)[0].split()[1:]
+    v = list(map(int, f[:8]))
+    return sum(v) - v[3] - v[4], sum(v)                # busy, total (idle and iowait excluded from busy)
+
+
+def mem_used_mb():
+    m = {}
+    for line in read("/proc/meminfo").splitlines():
+        k, _, v = line.partition(":")
+        m[k] = int(v.split()[0]) if v.strip() else 0
+    return (m.get("MemTotal", 0) - m.get("MemAvailable", 0)) / 1024.0
+
+
+class Gpu:
+    """Whole-GPU busy % and VRAM used, from whichever source this computer has; kind says which, or 'none'."""
+
+    def __init__(self):
+        self.kind, self.amd = "none", None
+        for c in sorted(glob.glob(DRM + "/card[0-9]*/device")):
+            if os.path.exists(c + "/gpu_busy_percent"):
+                self.kind, self.amd = "amdgpu sysfs", c
+                break
+        if self.kind == "none" and shutil.which("nvidia-smi"):
+            self.kind = "nvidia-smi"
+        if self.kind == "none" and shutil.which("intel_gpu_top"):
+            self.kind = "intel_gpu_top"
+        self.intel = None
+        self.intel_busy = None
+        if self.kind == "intel_gpu_top":
+            try:
+                self.intel = subprocess.Popen(["intel_gpu_top", "-J", "-s", "1000"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+                threading.Thread(target=self._intel_reader, daemon=True).start()
+                time.sleep(1.5)
+                if self.intel.poll() is not None:                # usually: needs root
+                    self.kind, self.intel = "none (intel_gpu_top needs root)", None
+            except OSError:
+                self.kind = "none"
+
+    def _intel_reader(self):
+        buf = ""
+        for line in self.intel.stdout:
+            buf += line
+            m = re.findall(r'"Render/3D/0":\s*\{\s*"busy":\s*([0-9.]+)', buf)
+            if m:
+                self.intel_busy = float(m[-1])
+                buf = buf[-2000:]
+
+    def sample(self):
+        """(busy_percent or None, vram_mb or None)"""
+        if self.kind == "amdgpu sysfs":
+            try:
+                busy = float(read(self.amd + "/gpu_busy_percent").strip())
+            except ValueError:
+                busy = None
+            vram = read(self.amd + "/mem_info_vram_used").strip()
+            return busy, (int(vram) / 1e6 if vram.isdigit() else None)
+        if self.kind == "nvidia-smi":
+            try:
+                o = subprocess.run(["nvidia-smi", "--query-gpu=utilization.gpu,memory.used", "--format=csv,noheader,nounits"], capture_output=True, text=True, timeout=3).stdout
+                a, b = [x.strip() for x in o.splitlines()[0].split(",")[:2]]
+                return float(a), float(b)
+            except (OSError, ValueError, IndexError, subprocess.SubprocessError):
+                return None, None
+        if self.kind == "intel_gpu_top":
+            return self.intel_busy, None
+        return None, None
+
+    def close(self):
+        if self.intel:
+            self.intel.terminate()
+
+
+class PwTop(threading.Thread):
+    """Every 5 s: raw pw-top output into pw-top.log, and the sum of the ERR column (xruns) best effort."""
+
+    def __init__(self, logpath):
+        super().__init__(daemon=True)
+        self.path, self.err_sum, self.stop_flag, self.ok = logpath, None, False, bool(shutil.which("pw-top"))
+
+    def run(self):
+        if not self.ok:
+            return
+        with open(self.path, "w") as lf:
+            while not self.stop_flag:
+                try:
+                    o = subprocess.run(["pw-top", "-b", "-n", "2"], capture_output=True, text=True, timeout=10).stdout
+                except (OSError, subprocess.SubprocessError):
+                    time.sleep(5)
+                    continue
+                lf.write(f"--- {datetime.now().isoformat(timespec='seconds')}\n{o}\n")
+                lf.flush()
+                last = o.split("S   ID")[-1] if "S   ID" in o else o     # the second snapshot
+                tot, seen = 0, False
+                for line in last.splitlines():
+                    m = re.match(r"^\s*[RSI!*]\s+\d+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\d+)\s", line)
+                    if m:
+                        tot += int(m.group(1))
+                        seen = True
+                if seen:
+                    self.err_sum = tot
+                for _ in range(50):
+                    if self.stop_flag:
+                        break
+                    time.sleep(0.1)
+
+
+def environment_text(gpu):
+    def run(*a):
+        try:
+            return subprocess.run(a, capture_output=True, text=True, timeout=5).stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            return ""
+    lines = [f"date: {datetime.now().isoformat(timespec='seconds')}", f"kernel: {os.uname().release}"]
+    cpu = [l.split(":", 1)[1].strip() for l in read("/proc/cpuinfo").splitlines() if l.startswith("model name")]
+    lines.append(f"cpu: {cpu[0] if cpu else '?'} x{len(cpu)} threads")
+    lines.append(f"gpu source: {gpu.kind}")
+    if shutil.which("lspci"):
+        lines.append("gpu devices: " + "; ".join(l.split(": ", 1)[-1] for l in run("lspci").splitlines() if re.search(r"VGA|3D|Display", l)))
+    if shutil.which("pw-metadata"):
+        lines.append("pipewire clock settings (a setting, not a measurement):")
+        lines += ["  " + l for l in run("pw-metadata", "-n", "settings").splitlines() if "clock" in l]
+    for cfg in glob.glob(os.path.expanduser("~/.config/camilladsp/config.yml")):
+        txt = read(cfg)
+        m = {k: re.search(rf"^\s*{k}:\s*(\S+)", txt, re.M) for k in ("samplerate", "chunksize", "target_level", "queuelimit")}
+        lines.append("camilladsp devices (settings, not a measurement): " + ", ".join(f"{k}={v.group(1)}" for k, v in m.items() if v))
+    return "\n".join(lines) + "\n"
+
+
+def stats(xs):
+    xs = sorted(x for x in xs if x is not None)
+    if not xs:
+        return None
+    p95 = xs[min(len(xs) - 1, int(round(0.95 * (len(xs) - 1))))]
+    return dict(n=len(xs), mean=statistics.fmean(xs), p95=p95, max=xs[-1])
+
+
+def fmt(s, unit=""):
+    return "n/a" if s is None else f"mean {s['mean']:.1f}{unit}, p95 {s['p95']:.1f}{unit}, max {s['max']:.1f}{unit}"
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Record CPU, RAM, GPU and PipeWire load of the home-theatre components.")
+    ap.add_argument("--interval", type=float, default=1.0, help="seconds between samples (default 1)")
+    ap.add_argument("--seconds", type=float, default=0, help="stop after this long (default: until Ctrl+C)")
+    ap.add_argument("--label", default="", help="a name for this run")
+    ap.add_argument("--out", default="", help="folder to write (default ~/resource-log/<time>-<label>)")
+    ap.add_argument("--add", action="append", default=[], metavar="NAME=REGEX", help="one more component, matched against the command line")
+    args = ap.parse_args()
+
+    comps = list(COMPONENTS)
+    for a in args.add:
+        n, _, rx = a.partition("=")
+        if not n or not rx:
+            sys.exit("--add wants NAME=REGEX")
+        comps.insert(0, (n, rx))
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    out = os.path.expanduser(args.out) if args.out else os.path.expanduser(f"~/resource-log/{stamp}" + (f"-{args.label}" if args.label else ""))
+    os.makedirs(out, exist_ok=True)
+    gpu = Gpu()
+    with open(os.path.join(out, "environment.txt"), "w") as f:
+        f.write(environment_text(gpu))
+    pw = PwTop(os.path.join(out, "pw-top.log"))
+    pw.start()
+
+    names = [n for n, _ in comps]
+    header = ["t_s", "mpv_running", "sys_cpu_pct", "ram_used_mb", "gpu_busy_pct", "vram_used_mb", "pw_err_sum"]
+    for n in names:
+        header += [f"{n}_cpu_pct", f"{n}_rss_mb", f"{n}_procs"]
+    stop = {"now": False}
+    signal.signal(signal.SIGINT, lambda *a: stop.update(now=True))
+    signal.signal(signal.SIGTERM, lambda *a: stop.update(now=True))
+    print(f"resource-log: writing {out}; GPU source: {gpu.kind}; Ctrl+C to stop and print the summary", flush=True)
+
+    rows = []
+    prev_t, prev_tab = time.time(), proc_table()
+    prev_busy, prev_total = cpu_total()
+    t0 = prev_t
+    with open(os.path.join(out, "samples.csv"), "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(header)
+        while not stop["now"] and not (args.seconds and time.time() - t0 >= args.seconds):
+            time.sleep(args.interval)
+            now, tab = time.time(), proc_table()
+            dt = max(1e-6, now - prev_t)
+            busy, total = cpu_total()
+            sys_cpu = 100.0 * (busy - prev_busy) / max(1, total - prev_total)
+            groups = classify(tab, comps)
+            gb, vram = gpu.sample()
+            row = [round(now - t0, 1), int(bool(groups.get("mpv"))), round(sys_cpu, 1), round(mem_used_mb(), 0),
+                   "" if gb is None else round(gb, 1), "" if vram is None else round(vram, 0), "" if pw.err_sum is None else pw.err_sum]
+            for n in names:
+                pids = groups[n]
+                cpu = 0.0
+                for p in pids:
+                    a, b = prev_tab.get(p), tab.get(p)
+                    if a and b:
+                        cpu += (b[2] - a[2]) / HZ / dt * 100.0
+                    elif b:                                            # new process: count from its start is unknown, skip this sample for it
+                        pass
+                row += [round(cpu, 1), round(sum(tab[p][3] for p in pids) / 1e6, 1), len(pids)]
+            w.writerow(row)
+            fh.flush()
+            rows.append(row)
+            prev_t, prev_tab, prev_busy, prev_total = now, tab, busy, total
+    pw.stop_flag = True
+    gpu.close()
+
+    idx = {h: i for i, h in enumerate(header)}
+    playing = [r for r in rows if r[idx["mpv_running"]]]
+    use = playing if playing else rows
+    scope = f"the {len(playing)} samples while mpv was running" if playing else f"all {len(rows)} samples (mpv was never seen running)"
+    lines = [f"# resource-log {stamp} {args.label}".rstrip(), "", f"{len(rows)} samples, {args.interval:g} s apart; the table covers {scope}.",
+             "CPU is % of one core (200 = two cores busy). RSS is resident memory.", "",
+             "| component | CPU % (of one core) | RSS MB (mean / max) | processes seen |", "|---|---|---|---|"]
+    for n in names:
+        cpu = stats([r[idx[f"{n}_cpu_pct"]] for r in use])
+        rss = stats([r[idx[f"{n}_rss_mb"]] for r in use])
+        procs = max((r[idx[f"{n}_procs"]] for r in use), default=0)
+        if procs == 0:
+            lines.append(f"| {n} | not seen | | 0 |")
+        else:
+            lines.append(f"| {n} | {fmt(cpu)} | {rss['mean']:.0f} / {rss['max']:.0f} | {procs} |")
+    sc = stats([r[idx["sys_cpu_pct"]] for r in use])
+    ram = stats([r[idx["ram_used_mb"]] for r in use])
+    gb = stats([r[idx["gpu_busy_pct"]] for r in use if r[idx["gpu_busy_pct"]] != ""])
+    vr = stats([r[idx["vram_used_mb"]] for r in use if r[idx["vram_used_mb"]] != ""])
+    lines += ["", f"- Whole computer CPU: {fmt(sc, ' %')} (100 % = all threads busy)",
+              f"- RAM in use: {fmt(ram, ' MB')}",
+              f"- GPU ({gpu.kind}): " + (f"busy {fmt(gb, ' %')}" + (f"; VRAM {fmt(vr, ' MB')}" if vr else "") if gb else "not measured on this computer (whole GPU only, never per process)")]
+    errs = [r[idx["pw_err_sum"]] for r in rows if r[idx["pw_err_sum"]] != ""]
+    lines.append(f"- PipeWire xruns (sum of pw-top ERR column, best effort): " + (f"{errs[0]} at the start, {errs[-1]} at the end, +{errs[-1] - errs[0]} over the run" if errs else "not read (no pw-top, or its output was not understood; see pw-top.log)"))
+    lines += ["", "Not measured: end-to-end audio latency (see environment.txt for the configured settings only).", ""]
+    text = "\n".join(lines)
+    with open(os.path.join(out, "summary.md"), "w") as f:
+        f.write(text)
+    print("\n" + text + f"\nfiles in {out}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

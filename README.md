@@ -202,7 +202,7 @@ the raw REW exports in `data/rew/`.
 
 ```
 docs/        the documentation (start with architecture.md and runbook.md); docs/graphs/ holds every graph, docs/img the diagrams
-scripts/     preflight (read-only health report), collect-versions.sh, clone-all.sh, test-all.sh
+scripts/     preflight (read-only health report), resource-log (CPU, RAM, GPU and PipeWire xruns per component during a film), collect-versions.sh, clone-all.sh, test-all.sh
 tools/       the figure and diagram generators: make-graphs.py, make-recording-graphs.py, make-verification-figures.py,
              make-architecture-diagram.py, make-system-overview.py, build-writeup-page.py
              (they read the other repositories: set-eq.py from linux-theater-dsp, REW data and analysers from Roomtone (formerly theater-measurement))
@@ -246,11 +246,9 @@ Then run `../sdht/scripts/preflight` (read-only health report) before the first 
 
 Not yet recorded, so not stated here (the checklist is [docs/todo-fill-in.md](docs/todo-fill-in.md); `TODO(owner)` marks the spots in the docs):
 
-- Recorded on 2026-10-24: PipeWire 1.0.5, WirePlumber 0.4.17, CamillaDSP 4.1.3, liborender 0.3.0 (omniphony-studio 0.4.2), mpv 0.41.0 (patched, built from source); see [docs/installation.md](docs/installation.md#2-player-stack). TODO: the harletty-bridge commit (the library carries no version) and the Omniphony commit. There is no `mpv.conf`: mpv is configured in the `mpv-atmos` wrapper.
-- TODO: bill of materials with sources and prices, the media-library mount and the laptop-to-projector HDMI path.
-- TODO: CPU and latency of the live decode and render chain (the 4 % and 21 ms figures are for the upmix engine only).
-- TODO: whether DTS:X works on this rig (harletty-bridge advertises DTS and DTS:X input; it has not been tested here).
-- TODO: microphone calibration file, mic position and playback level of the tests; projector fan state during the noise measurement.
+- Recorded on 2026-10-24: PipeWire 1.0.5, WirePlumber 0.4.17, CamillaDSP 4.1.3, liborender 0.3.0 (omniphony-studio 0.4.2), mpv 0.41.0 (patched, built from source); see [docs/installation.md](docs/installation.md#2-player-stack). The new player stack installed on 2026-10-25 reports engine v0.7.0 (ABI 0.12), harletty-bridge v0.9.0 (bridge API 0.6.0) and Omniphony commit 55af2c5 (see [docs/installation.md](docs/installation.md)); the older `mpv-atmos` stack's bridge build carries no version or commit and is not recorded. There is no `mpv.conf`: mpv is configured in the `mpv-atmos` wrapper.
+- TODO: CPU, RAM and GPU of the live decode and render chain during a film (the 4 % and 21 ms figures are for the upmix engine only). Record it with `scripts/resource-log` (CPU, RAM, GPU and PipeWire xruns per component; it does not measure end-to-end latency).
+- A DTS:X clip played with sound on 2026-10-25 (USB interface not connected). Not yet confirmed: that it is decoded as DTS:X objects. The check is a DTS:X film that plays with the overlay showing the 7.1.4 channels.
 - TODO: which scripts predate the October working sessions.
 
 The checks still to do at the rig are in [docs/status.md](docs/status.md#checks-still-to-do).
