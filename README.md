@@ -249,7 +249,6 @@ Not yet recorded, so not stated here (the checklist is [docs/todo-fill-in.md](do
 - Recorded on 2026-10-24: PipeWire 1.0.5, WirePlumber 0.4.17, CamillaDSP 4.1.3, liborender 0.3.0 (omniphony-studio 0.4.2), mpv 0.41.0 (patched, built from source); see [docs/installation.md](docs/installation.md#2-player-stack). The new player stack installed on 2026-10-25 reports engine v0.7.0 (ABI 0.12), harletty-bridge v0.9.0 (bridge API 0.6.0) and Omniphony commit 55af2c5 (see [docs/installation.md](docs/installation.md)); the older `mpv-atmos` stack's bridge build carries no version or commit and is not recorded. There is no `mpv.conf`: mpv is configured in the `mpv-atmos` wrapper.
 - TODO: CPU, RAM and GPU of the live decode and render chain during a film (the 4 % and 21 ms figures are for the upmix engine only). Record it with `scripts/resource-log` (CPU, RAM, GPU and PipeWire xruns per component; it does not measure end-to-end latency).
 - A DTS:X clip played with sound on 2026-10-25 (USB interface not connected). Not yet confirmed: that it is decoded as DTS:X objects. The check is a DTS:X film that plays with the overlay showing the 7.1.4 channels.
-- TODO: which scripts predate the October working sessions.
 
 The checks still to do at the rig are in [docs/status.md](docs/status.md#checks-still-to-do).
 
@@ -258,8 +257,8 @@ should only be rebuilt by someone who knows what they are doing.
 
 ## Authorship and licence
 
-The tuning decisions, measurements, listening tests and the build itself are Praveen's. The scripts, the analysis code and first drafts of these documents were written with Claude (Anthropic) in working sessions, mainly 2026-10-20 to 2026-10-24
-(TODO: which scripts, if any, predate that). This includes the code that produces the numbers: the sweep, sub, dialogue (STI) and reflection analysers and the rattle detector. It has been checked against simulated rooms and against the REW exports,
+The tuning decisions, measurements, listening tests and the build itself are Praveen's. The scripts, the analysis code and first drafts of these documents were written with Claude (Anthropic) in working sessions from 2026-10-20 (most of the code in the first five days, the status page, autocal, seekthumbs and mpv-shelf in the days after).
+No script can be shown to be older than 2026-10-20; three early scripts and the `mpv-atmos` option block (dated Sep 2026 by its own header) were in hand before the code was written up here, and who wrote the option block is not settled by the repositories. The evidence and its limits are in [docs/script-ages.md](docs/script-ages.md). This includes the code that produces the numbers: the sweep, sub, dialogue (STI) and reflection analysers and the rattle detector. It has been checked against simulated rooms and against the REW exports,
 not independently validated.
 
 **Licence: [Apache License 2.0](LICENSE)**, for all six repositories. It lets anyone use, change and redistribute the work, including commercially, and it carries an explicit patent grant and a "no warranty" clause. Most of the project is integration of other people's software

@@ -24,7 +24,7 @@ Search the docs for `TODO(owner)`. Checklist:
 - [ ] Whether DTS:X is decoded as objects on this rig: a DTS:X clip played with sound on 2026-10-25 without the USB interface; still to confirm: a DTS:X film plays and the overlay shows the 7.1.4 channels
 - [x] Where the remux files come from: deliberately not stated (owner's decision, 2026-10-26). The repositories distribute no media and no decoder binaries
 - [x] Microphone calibration file: provided, in `data/mic/` (belongs to one Dayton iMM-6S; applied by the analysers since 2026-10-26, see theater-measurement data/README.md)
-- [ ] Which scripts predate the 2026-10-20 to 24 working sessions
+- [x] Which scripts predate the 2026-10-20 to 24 working sessions: reviewed 2026-10-27, see [script-ages.md](script-ages.md). Open: the timestamps of `~/.local/bin/mpv-atmos` and the overlay Lua on the laptop (`ls -l --time-style=full-iso` on both) would settle the two undated files
 - [ ] Re-run `./scripts/collect-versions.sh --redact` with the USB interface plugged in and a film playing (loaded plugin, live links, audio devices)
 - [ ] Copy `scripts/mpv-atmos` to `~/.local/bin/mpv-atmos` on the laptop (the installed one has no `eq prepare` and no IPC socket)
 
