@@ -110,6 +110,9 @@ The full hardware table, channel map and diagrams are in [docs/architecture.md](
 | Oct 19 to 21 | CamillaDSP stage: bass voicing, speaker alignment, auto-routing and an EQ on/off switch |
 | Oct 23 | Verification sweeps through CamillaDSP: delays confirmed, heights bass-managed and tone-matched, sub range measured, dialogue and reflection kits built |
 | Oct 24 | Reboot test of the standing profile, stereo and 5.1 upmix presets, automatic profile selection, adaptive-ambience prototype |
+| Oct 25 | Split into separate repositories with history kept (five at first, six on Oct 26 with mpv-shelf) |
+| Oct 26 | Status page and autocal page in Roomtone (live sound field, guided runs); seekthumbs builds when you play a film and shares one set across releases; mpv-shelf film browser added |
+| Oct 27 | seekthumbs web page for choosing films to build; what a debrid mount costs per film measured (about 13 to 18 min for a 4K remux); mpv-shelf (Ctrl+b), the overlay `c` key and the seek-bar hover preview confirmed in real mpv; web page fixed to read one release per film |
 
 Every problem met on the way, with cause and fix, is in [docs/omniphony-debugging.md](https://github.com/praveenchandrahas/mpv-object-audio/blob/main/docs/omniphony-debugging.md).
 
