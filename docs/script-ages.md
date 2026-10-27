@@ -15,7 +15,7 @@ Question from the README: which scripts, if any, predate the working sessions of
 
 - Git cannot see earlier work. The sdht history starts on 2026-10-21 with one commit that imported 46 files from a working folder, and the split repositories begin on 2026-10-25 and 26, so a commit date is only a latest-possible date.
 - Only one earlier chat could be found by search, and nothing before 2026-10-20, so the July to September conversations were not checked.
-- Not checked: the files on the owner's laptop (`~/.local/bin/mpv-atmos`, the overlay Lua, and anything in `~/HomeTheatre`), whose timestamps would settle the two undated files. The seekthumbs README also mentions an earlier pre-generation script and a WebDAV browser script, neither of which is in any repository; whether they are ancestors of the current code is unknown.
+- The wrapper installed on the laptop (`~/.local/bin/mpv-atmos`, 1,611 bytes, modified 2026-10-26 11:20 IST) has the same size as the repository copy, so it is most likely that copy installed on 10-26; its date says nothing about the original. The undated overlay Lua and anything in `~/HomeTheatre` were not checked. The seekthumbs README also mentions an earlier pre-generation script and a WebDAV browser script, neither of which is in any repository; whether they are ancestors of the current code is unknown.
 - Style says nothing about age, and none was used.
 
 ## Other findings
