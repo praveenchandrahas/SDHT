@@ -144,7 +144,7 @@ Current tuning is the **standing profile**, `./scripts/set-eq.py` with no argume
 --heights-tone`), installed by `scripts/make-default.sh` and applied by `eq ensure` whenever `mpv-atmos` starts:
 
 - **`drone2`** bass preset: cut-only, strong thump with the 63 to 92 Hz drone tamed ([tuning-log](docs/tuning-log.md)).
-- **`--align`**: per-speaker delays and trims so that the seven full-range speakers arrive within about 0.2 ms of each other at the seat in the first sweep run (the sub arrives 6 to 7 ms late and is not yet compensated; see A3 and [alignment](docs/alignment.md)).
+- **`--align`**: per-speaker delays and trims so that the seven full-range speakers arrive within about 0.2 ms of each other at the seat in the first sweep run (the sub arrives 6 to 7 ms later; at this seat that is judged inaudible as a delay, so it is left as it is, though its phase against the bed at the crossover is still open; see A3 and [alignment](docs/alignment.md)).
 - **`--heights`, `--heights-tone`**: the heights cannot reproduce bass, so it goes to the sub, and their tone is moved towards the bed's (about 1 dB rms closer; see A4).
 
 ![Predicted effect of drone2 at the seat](docs/img/bass-response-drone2.png)
@@ -180,7 +180,7 @@ Claim by claim in [docs/status.md](docs/status.md) (updated 2026-10-24). "Measur
 | Measured, and confirmed by listening or a second run | Measured once, not confirmed afterwards | Not yet tested on the real system |
 |---|---|---|
 | Bass voicing (`drone2`), by recordings and listening | Level trims: within about 2 dB in each run, but the same speaker moves by up to about 2.5 dB between runs (mic position) | Auto-routing and the `eq` switch (simulated only) |
-| Speaker delays: the seven full-range speakers within 0.2 ms of FL in sweep run 1 (up to 0.6 ms in run 2, mic moved). **The sub arrives 6 to 7 ms after FL and is not compensated** | Heights bass management: heights + sub within 2.6/2.7 dB rms of the bed over 40-400 Hz (the heights alone: 41 dB). Heights tone: 3.1/3.5 dB rms from the bed against 4.5/4.1, about 1 dB closer, inside the run-to-run noise. Trim lowered to +1.0 dB, not re-measured | Routing to the rig after a reboot (needs the USB interface connected) |
+| Speaker delays: the seven full-range speakers within 0.2 ms of FL in sweep run 1 (up to 0.6 ms in run 2, mic moved). **The sub arrives 6 to 7 ms after FL; left uncompensated (inaudible as a delay here, crossover phase open)** | Heights bass management: heights + sub within 2.6/2.7 dB rms of the bed over 40-400 Hz (the heights alone: 41 dB). Heights tone: 3.1/3.5 dB rms from the bed against 4.5/4.1, about 1 dB closer, inside the run-to-run noise. Trim lowered to +1.0 dB, not re-measured | Routing to the rig after a reboot (needs the USB interface connected) |
 | Live Atmos object rendering through the whole chain | Sub range: harmonics below 3 % down to about 40 Hz, usable to 36 Hz, nothing usable under 22 Hz | Automatic profile switching (Chrome, 5.1, stereo) |
 | Services and standing profile start at boot (2026-10-24, away from the rig) | Early reflections: FC and FR meet the ITU-R BS.1116 limit; FL and both heights exceed it by one reflection each; panel effect untested | Upmix presets by ear (measured offline only) |
 | Lip-sync: Praveen's listening, not measured | Dialogue kit (2026-10-24): STIPA-style STI 0.79 to 0.83, dialogue 13 to 18 dB above the noise; centre has +5.7 dB boom and -3.3 dB presence | |
@@ -305,7 +305,7 @@ mismatch (the 40 Hz band is 3 dB deeper than predicted); neither recording clips
 
 Redrawn from the recordings. The seven full-range speakers arrive within 0.26 ms (run 1) and 0.62 ms (run 2) of each other, against about 4.7 to 4.9 ms before the delays (two reconstructions of the same quantity); levels sit within about 2 dB in each run, and the same speaker
 moves by up to about 2.5 dB between runs. The "before" arrivals are the measured ones minus the applied delay. **The sub (LFE) arrives 6 to 7 ms after the front left** (group delay near 15 ms at 50 to 100 Hz), yet its delay is
-still kept equal to FL's; see [status](docs/status.md).
+still kept equal to FL's. That offset is judged too small to hear as a timing error at this seat (about 2 m of path, nothing like an echo, and well under published audibility limits for group delay at these frequencies); what it can still change is how the sub and the bed add around the crossover, which is open. See [status](docs/status.md).
 
 ### A4. Heights: tone-match and bass management
 

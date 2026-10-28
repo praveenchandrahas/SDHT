@@ -5,7 +5,7 @@ Updated 2026-10-25. "Verified" means measured **and** confirmed by a recording o
 | Claim | Evidence | Level |
 |-------|----------|-------|
 | `drone2` removes the boomy drone and keeps the thump | Recordings at the seat vs no DSP on F1, Godzilla, Tenet; band-energy deltas matched predictions within about 1-2 dB; owner's listening agrees | **Verified** |
-| Speaker delays (table in [alignment.md](alignment.md)) are right | Chirp test, two runs (the first discarded for a setup error); after-recordings, then sweep run 1 (2026-10-23, CamillaDSP in the path): the seven full-range speakers arrive within 0.2 ms of FL (the sub, 6-7 ms later, is not compensated) | **Verified** |
+| Speaker delays (table in [alignment.md](alignment.md)) are right | Chirp test, two runs (the first discarded for a setup error); after-recordings, then sweep run 1 (2026-10-23, CamillaDSP in the path): the seven full-range speakers arrive within 0.2 ms of FL (the sub, 6-7 ms later, is left uncompensated; see Sub arrival below) | **Verified** |
 | All speakers are in phase (no inversion) | Pair test T6, in phase louder for every pair | Measured |
 | Level trims bring the speakers to the same level | Sweep run 1: bed speakers within about 2 dB of FL at 500-2k (FR -0.5, SL +0.9, SR +1.7); repositioning the mic moves such numbers by 1-2 dB | Measured (+-2 dB) |
 | Heights are bass-managed into the sub and tone-matched to the bed | Sweep run 2 with the profile on: heights + sub within 2.6/2.7 dB rms of the bed over 40-400 Hz (was 41 dB for the heights alone, per bin; about 27 dB with 1/6-octave smoothing); tone deviation 3.1/3.5 dB rms (was 4.5/4.1); heights ran 2-3 dB hot with the first trim, lowered to +1.0 dB (not re-measured) | Measured |
@@ -51,4 +51,9 @@ Updated 2026-10-25. "Verified" means measured **and** confirmed by a recording o
 ## Sub arrival (measured 2026-10-24 from sweep1/sweep2)
 
 The sub (LFE) arrives about 6 to 7 ms after the front left at the seat, with a group delay near 15 ms at 50 to 100 Hz. The LFE delay is still 0.20 ms (kept in step with FL), so this has not been compensated.
-Whether to delay the bed or to leave the sub late is open; at 60 Hz one period is 16 ms, so the phase against the bed matters more than the arrival time.
+
+**Is it audible as a delay? Judged no, at this seat.** This is a judgement from the numbers and published thresholds as the author knows them, not a listening test, and it rests on one seat and sweep-derived figures.
+- 6 to 7 ms is about 2 m of path. For bass below about 100 Hz it is not heard as a separate event: low frequencies cannot be localised, there is no echo, and the delay thresholds known for 50 to 100 Hz material are in the tens of milliseconds, above the 15 ms group delay here.
+- Being a few feet from every speaker does not change this. The offset is the sub's own latency (filters, port, amplifier) as measured at the seat, not a distance effect, and the small room makes the satellite-to-satellite spread negligible (within 0.2 ms).
+- Not settled by that argument: how the sub and the bed add around the crossover. At 60 Hz one period is 16 ms, so 6.5 ms is about 0.4 of a cycle; at 80 Hz it is about half a cycle, which is the worst case for cancellation where both are playing. That shows up as a dip or bump in the measured response (heights + sub were within 2.6/2.7 dB rms of the bed over 40-400 Hz), not as lateness. Whether delaying the bed or flipping polarity improves the summation is open; judge it by a sweep and by ear.
+- To confirm by ear: play a kick drum or the LFE test clip with the bed delayed by 6.5 ms and then not, level-matched; if you cannot tell them apart the delay is irrelevant to you.

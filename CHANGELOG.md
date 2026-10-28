@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-10-28
+- Docs: the sub's 6 to 7 ms late arrival is now described as judged inaudible as a delay at the seat (reasoned from thresholds and the room, not listening-tested), with the open question restated as how the sub and bed sum around the crossover (README, status.md, stack-vs-frontier.md).
+
 ## 2026-10-27
 - **seekthumbs memory guard:** the terminal running the web page was stopped twice by the kernel's out-of-memory killer (15 GB laptop, 512 MB swap, 16 parallel readers at the second one). Each parallel read keeps an open decoder (about 180 MB each for 4K 10-bit HEVC without HDR tone-mapping, measured on a synthetic clip; HDR not measured). The number of readers is now cut to what the free memory allows (`worker_mem_mb` 600, `mem_reserve_mb` 3000), and seekthumbs raises its own OOM score so the kernel picks it first. Recommended on a machine like this: run the page in its own memory-capped systemd scope.
 - **docs/script-ages.md** (new): which scripts predate the 2026-10-20 to 24 sessions. Result: none can be shown to; the README authorship paragraph now says so, with the limits (shallow or squashed history, no pre-10-20 chats found).
