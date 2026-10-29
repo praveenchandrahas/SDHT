@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Figures 24 and 25: two runs of 2026-10-29 over time, drawn from the slimmed run data in docs/data (samples and the CamillaDSP buffer-empty times).
-Run start is taken from environment.txt (09:58:41 and 10:44:33), so event times are good to about 1 s.
+"""Figures 24 to 26: three runs of 2026-10-29 over time, drawn from the slimmed run data in docs/data (samples and the CamillaDSP buffer-empty times).
+Run start is taken from environment.txt (09:58:41, 10:44:33 and 12:38:33), so event times are good to about 1 s.
 Usage: python3 tools/make-resource-timeseries.py [output-directory]"""
 import csv, os, sys
 import matplotlib
@@ -16,12 +16,16 @@ plt.rcParams.update({"figure.facecolor": SURF, "axes.facecolor": SURF, "savefig.
                      "axes.spines.right": False, "axes.grid": True, "grid.color": GRID, "grid.linewidth": 0.8, "axes.axisbelow": True})
 
 RUNS = [
-    dict(stem="resource-log-20261029-4k", start=(9, 58, 41), file="24_4k_run_over_time.png", figsize=(11, 8.6), until=None,
+    dict(stem="resource-log-20261029-4k", start=(9, 58, 41), file="24_4k_run_over_time.png", figsize=(11, 8.6), until=None, since=0.0, rows_until=None,
          title="4K remux streamed from the mount, 600 s: 116 buffer-empty lines (green) against load",
          panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
                  ("psi_io_pct", "I/O pressure\n(PSI %)", "line", GREY), ("pw_err_sum", "PipeWire xruns\n(cumulative)", "step", INK)]),
-    dict(stem="resource-log-20261029-hover", start=(10, 44, 33), file="25_hover_run_over_time.png", figsize=(11, 8.6), until=121.0,
+    dict(stem="resource-log-20261029-hover", start=(10, 44, 33), file="25_hover_run_over_time.png", figsize=(11, 8.6), until=121.0, since=0.0, rows_until=None,
          title="Same stream, 2 minutes: quiet for 110 s, then mpv at up to 100 % CPU, dropped frames and xruns (seek-bar hovering, per the owner)",
+         panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
+                 ("mpv_drops", "mpv frames dropped\n(cumulative)", "step", INK), ("pw_err_sum", "PipeWire xruns\n(cumulative)", "step", INK)]),
+    dict(stem="resource-log-20261029-hover2", start=(12, 38, 33), file="26_hover2_run_over_time.png", figsize=(11, 8.6), until=65.0, since=2.0, rows_until=64.0,
+         title="Second hover test (viewer change possibly not installed): clean 35 s, then mpv at 100 to 140 % CPU, 80 drops, 241 xruns",
          panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
                  ("mpv_drops", "mpv frames dropped\n(cumulative)", "step", INK), ("pw_err_sum", "PipeWire xruns\n(cumulative)", "step", INK)]),
 ]
@@ -29,12 +33,14 @@ RUNS = [
 
 def draw(run):
     rows = list(csv.DictReader(open(os.path.join(D, run["stem"] + "-samples.csv"))))
+    if run["rows_until"] is not None:                              # the xrun total falls when a node disappears after mpv closes: leave that out
+        rows = [r for r in rows if float(r["t_s"]) <= run["rows_until"]]
     h0, m0, s0 = run["start"]
     ev = []
     for s in open(os.path.join(D, run["stem"] + "-buffer-empty-times.txt")).read().split():
         h, m, sec = s.split(":")
         t = int(h) * 3600 + int(m) * 60 + float(sec) - (h0 * 3600 + m0 * 60 + s0)
-        if run["until"] is None or t <= run["until"]:           # lines after mpv stopped are the idle ones
+        if t >= run["since"] and (run["until"] is None or t <= run["until"]):           # lines before the audio started and after mpv stopped are the idle ones
             ev.append(t)
     fig, axs = plt.subplots(len(run["panels"]), 1, figsize=run["figsize"], sharex=True, gridspec_kw={"height_ratios": [2, 1.4, 1.4, 1.4]})
     for ax, (col, label, kind, colour) in zip(axs, run["panels"]):
