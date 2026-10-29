@@ -46,7 +46,32 @@ Updated 2026-10-25. "Verified" means measured **and** confirmed by a recording o
 7. **Automatic profile at the rig.** (a) Play a YouTube video in Chrome: `eq status` should show "Google Chrome: playing, 2/2 channels patched" and `Profile: stereo:balanced`; if it says nothing about Chrome, send `pw-link -o | grep -i chrome`. (b) Start an Atmos film, then a 5.1 file, then a stereo file with `mpv-atmos`: `eq source` and `eq status` should say film / bed / stereo. (c) Chrome playing while a film starts: the film wins and Chrome must go back to normal sound (untested: relies on WirePlumber re-linking it). (d) Plain `mpv` needs `input-ipc-server` in mpv.conf.
 8. **Adaptive engine at the rig.** Never run against real PipeWire (the DSP, latency and CPU are tested offline only). Re-run `install-autoroute.sh`, play a YouTube video, then `eq status`: expect "Adaptive engine: on, service active, ports up, linked into CamillaDSP" and `Profile: stereo-ad:balanced`. Unverified: the pw-cat flags and port names (`theater-upmix-in:input_FL`, `theater-upmix-out:output_AUX0..3`; check with `pw-link -io | grep theater`), whether the engine gets real-time priority (watch for clicks in the rear/ceiling feeds; `journalctl --user -u theater-upmix`), and the real end-to-end delay of the rear feeds (the sweep tools can measure it). If it falls back to the fixed matrix, send me `journalctl --user -u theater-upmix -n 30`. Judge adaptive vs fixed by ear: `eq engine off` / `eq engine on` mid-clip.
 9. **DTS:X as objects.** A DTS:X clip played with sound on 2026-10-25 (USB interface not connected), which does not show it was decoded as DTS:X. Check: `ffprobe -v error -select_streams a -show_entries stream=codec_name,profile,channels -of csv FILE` should name DTS-HD MA with DTS:X in the profile (a file name that says DTS:X is not proof); play it with the new player and confirm the overlay shows the 7.1.4 channels; note which layout the engine log reports.
-10. **CPU, RAM, GPU and dropouts during a film.** After the seekthumbs queue has finished, with the laptop connected to the Vantec: Roomtone's [`scripts/resource-log`](https://github.com/praveenchandrahas/Roomtone/blob/main/scripts/resource-log) `--label atmos --gpu-sudo` in a terminal (Intel GPU: needs `intel-gpu-tools`, asks for your password once), start the film, Ctrl+C at the end; send `summary.md`. Repeat with the film stopped (`--label idle`) and once for a DTS:X film. It measures load, buffer-empty lines, xruns and dropped frames, not end-to-end latency.
+10. **CPU, RAM, GPU and dropouts during a film.** First measurement done 2026-10-28 (three short runs of one small local file; results in [Resource log, 2026-10-28](#resource-log-2026-10-28) below). Still to do: a 4K HDR / Dolby Vision remux, a run of 10 minutes or more, the GPU on the Atmos run (it recorded nothing the first time), a repeat of the idle run, and a check that the two constant probes (buffer level, A/V sync) can move at all.
+
+## Resource log, 2026-10-28
+
+Three runs of Roomtone's `scripts/resource-log`, 1 s samples, at about 15:40 to 15:45 IST: `atmos` (52 samples with mpv running, about 54 s), `idle` (117 s, nothing playing) and `dtsx` (45 samples with mpv running, about 47 s). One small local file, so no network reading and not a 4K HDR remux; this is a first look, not a worst case. End-to-end latency was not measured.
+
+| What | Result |
+|---|---|
+| Clipping, PipeWire xruns | 0 and 0 in all three runs (xruns are best effort in the script) |
+| CamillaDSP load | mean 2.8 to 3.7 %, max 4.2 % |
+| Buffer-empty lines while mpv ran | Atmos 0; DTS:X 41 (about 21 ms apart, so under one second in total; whether they fell at the start, before audio began, or mid-film is not yet checked) |
+| mpv frames | 0 dropped, delayed or mistimed in both film runs |
+| mpv CPU | Atmos mean 18.8 % of one core (max 66 %); DTS:X mean 48 % (max 63 %); the rest of the chain a few percent |
+| RAM in use | 5.5 GB idle, 5.9 to 6.4 GB while playing (mpv about 450 to 540 MB) |
+| Temperature | mean 54.6 to 55 C, max 61 to 62 C, no thermal throttle |
+| GPU (DTS:X run only) | Render/3D 31 % mean, video decode engine 3 %, 1.1 W; the Atmos run recorded none |
+| Network | about 0 Mbit/s (local file) |
+
+Things this does not show, and what looks off:
+
+- **Two probes never moved.** CamillaDSP buffer level read 0 and mpv A/V sync read exactly 0.0 ms in every run, including playback. That may be real or may be a probe reading a field that does not update; it is untested. Check: run a deliberate load (for example `stress-ng --cpu $(nproc) --timeout 60s`) during playback and see whether anything moves.
+- **The idle computer is busy.** Idle whole-computer CPU averaged 29 % while the listed components added up to a few percent of one core, so most of it is unattributed (browser, desktop, Docker and so on). That also fits an idle temperature of 55 C.
+- **I/O stalls differ between runs.** Mean I/O pressure (PSI) was 48 % (atmos) and 36 % (idle), nearly flat, then 2 % in the DTS:X run two minutes later. A flat value looks like one task waiting on I/O the whole time (a guess: a process stuck on the Decypharr mount, which was failing that day), not varying load. Unexplained; repeat the idle run when the mount works.
+- **A warning about once a second** ("Lost connection: WebSocket protocol error") comes from theater-ctld's connection to CamillaDSP, which closes without a close frame. Harmless, but it inflates the warning counts. A fix is not applied.
+- **Idle CamillaDSP** logs "buffer empty" about every 21 ms (47 per second, 5,633 in 120 s); the script counts these separately for the time mpv is not running.
+- **GPU data is intermittent.** The Atmos run used `--gpu-sudo` and got none; the DTS:X run got it. Run `sudo -v` immediately before the log. Plain `intel_gpu_top` without root aborts on this machine with an assertion in `get_num_gts`.
 
 ## Sub arrival (measured 2026-10-24 from sweep1/sweep2)
 
