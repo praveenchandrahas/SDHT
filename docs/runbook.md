@@ -96,7 +96,7 @@ Not verified on the real system yet: Chrome's PipeWire node name (check `eq stat
 
 - **Do not change the sub level** without re-measuring the Z906 channels: all bass tuning assumes the sub as it is.
 - The master volume can be changed freely: it scales all channels equally.
-- Record the knob positions here: TODO(owner): sub-level position and master volume reference position (photo in `docs/img/`).
+- Record the knob positions here: the Z906 sub level and the master volume are both at exactly 50 % on the knob (owner, 2026-10-29).
 
 ## Starting, stopping, services
 

@@ -62,7 +62,7 @@ How the Omniphony stack was built and debugged on this machine is in [docs/omnip
 between speakers. *OSC*: the network control protocol Omniphony uses. *LR4*: a 24 dB per octave crossover filter. *`drone2`*, *`thump20x`*, *`tight20x`*:
 named bass EQ presets (`drone2` is the one in use). *Standing profile*: the settings applied at every start. *STI*, *C50*, *RT60*: speech-intelligibility, clarity
 and reverberation measures. *BS.1116*: the ITU-R listening-room recommendation whose early-reflection limit (-10 dB) is used here. *Hot sub run*: the sub test repeated
-at higher level. *Dolby Amaze*: Dolby's Atmos demo clip, in which Praveen hears a buzz. *Bar test*: a kit for comparing the rig with a soundbar.
+at higher level. *Dolby Amaze*: Dolby's Atmos demo clip, in which the author hears a buzz. *Bar test*: a kit for comparing the rig with a soundbar.
 
 ## The build
 
@@ -122,7 +122,7 @@ Every problem met on the way, with cause and fix, is in [docs/omniphony-debuggin
 [`scripts/mpv-atmos`](https://github.com/praveenchandrahas/mpv-object-audio/tree/main/scripts/mpv-atmos) is a reference copy of the wrapper: `--ad=orender` with the engine and bridge paths,
 VAAPI decode, `--vo=gpu-next` on Vulkan, `--target-peak=60 --tone-mapping=bt.2390`, a Mitchell downscaler with linear,
 corrected downscaling, and debanding. [`scripts/mpv-atmos-overlay-off.lua`](https://github.com/praveenchandrahas/mpv-object-audio/blob/main/scripts/mpv-atmos-overlay-off.lua) switches the
-trajectory overlay off at file load. Paths are from Praveen's machine; adjust them.
+trajectory overlay off at file load. Paths are from the author's machine; adjust them.
 
 ## Tuning and automation (the CamillaDSP stage)
 
@@ -184,10 +184,10 @@ Claim by claim in [docs/status.md](docs/status.md) (updated 2026-10-24). "Measur
 | Speaker delays: the seven full-range speakers within 0.2 ms of FL in sweep run 1 (up to 0.6 ms in run 2, mic moved). **The sub arrives 6 to 7 ms after FL; left uncompensated (inaudible as a delay here, crossover phase open)** | Heights bass management: heights + sub within 2.6/2.7 dB rms of the bed over 40-400 Hz (the heights alone: 41 dB). Heights tone: 3.1/3.5 dB rms from the bed against 4.5/4.1, about 1 dB closer, inside the run-to-run noise. Trim lowered to +1.0 dB, not re-measured | Routing to the rig after a reboot (needs the USB interface connected) |
 | Live Atmos object rendering through the whole chain | Sub range: harmonics below 3 % down to about 40 Hz, usable to 36 Hz, nothing usable under 22 Hz | Automatic profile switching (Chrome, 5.1, stereo) |
 | Services and standing profile start at boot (2026-10-24, away from the rig) | Early reflections: FC and FR meet the ITU-R BS.1116 limit; FL and both heights exceed it by one reflection each; panel effect untested | Upmix presets by ear (measured offline only) |
-| Lip-sync: Praveen's listening, not measured | Dialogue kit (2026-10-24): STIPA-style STI 0.79 to 0.83, dialogue 13 to 18 dB above the noise; centre has +5.7 dB boom and -3.3 dB presence | |
+| Lip-sync: the author's listening, not measured | Dialogue kit (2026-10-24): STIPA-style STI 0.79 to 0.83, dialogue 13 to 18 dB above the noise; centre has +5.7 dB boom and -3.3 dB presence | |
 | | Polarity: all speakers in phase | |
 
-**Open:** a rattle or buzz in loud bass scenes. Praveen hears it as sub-cabinet rattle; steady tones at -14 dBFS do not
+**Open:** a rattle or buzz in loud bass scenes. The author hears it as sub-cabinet rattle; steady tones at -14 dBFS do not
 reproduce it, and the Dolby Amaze recording shows no fixed 100 Hz line that would separate cabinet rattle from a room mode. In the hot sub run the recording peaks at the same level on eight tones, which points at a limit in the
 chain that has not been located. Next step is the same kit at a lower level and a different mic position, and at -8 and -3 dBFS ([tools/subtest](https://github.com/praveenchandrahas/Roomtone/blob/main/tools/subtest/README.md)).
 
@@ -258,7 +258,7 @@ should only be rebuilt by someone who knows what they are doing.
 
 ## Authorship and licence
 
-The tuning decisions, measurements, listening tests and the build itself are Praveen's. The scripts, the analysis code and first drafts of these documents were written with Claude (Anthropic) in working sessions from 2026-10-20 (most of the code in the first five days, the status page, autocal, seekthumbs and mpv-shelf in the days after).
+The tuning decisions, measurements, listening tests and the build itself are the author's. The scripts, the analysis code and first drafts of these documents were written with Claude (Anthropic) in working sessions from 2026-10-20 (most of the code in the first five days, the status page, autocal, seekthumbs and mpv-shelf in the days after).
 No script can be shown to be older than 2026-10-20; three early scripts and the `mpv-atmos` option block (dated Sep 2026 by its own header) were in hand before the code was written up here, and who wrote the option block is not settled by the repositories. The evidence and its limits are in [docs/script-ages.md](docs/script-ages.md). This includes the code that produces the numbers: the sweep, sub, dialogue (STI) and reflection analysers and the rattle detector. It has been checked against simulated rooms and against the REW exports,
 not independently validated.
 
@@ -271,7 +271,7 @@ Dolby, Dolby Atmos, DTS and DTS:X are trademarks of their owners; this project i
 
 ## Adapting this to your system
 
-The files describe one particular rig and contain paths, names and numbers from it: a home folder such as `/home/praveen`, the Vantec 7.1 USB interface and its PipeWire node names, the speaker layout (5.1.2 with a Z906 and ceiling heights), delays, trims and EQ measured in one room, and the library and rclone mount paths.
+The files describe one particular rig and contain paths, names and numbers from it: a home-folder path, the Vantec 7.1 USB interface and its PipeWire node names, the speaker layout (5.1.2 with a Z906 and ceiling heights), delays, trims and EQ measured in one room, and the library and rclone mount paths.
 **Change these to match your own system before running anything.** The delays, trims and EQ in particular are only valid for that room and must be re-measured for yours ([docs/runbook.md](docs/runbook.md)). Scripts that install anything say so before they do, and `scripts/check-installed.sh` and `scripts/preflight` only read.
 
 ## Checking the install and the tests
