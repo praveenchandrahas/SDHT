@@ -37,6 +37,12 @@ RUNS.append(dict(stem="resource-log-20261029-hover3", start=(12, 46, 12), file="
                  panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
                          ("mpv_drops", "mpv frames dropped\n(since the start)", "step", INK), ("pw_err_sum", "PipeWire xruns\n(since the start)", "step", INK)]))
 
+RUNS.append(dict(stem="resource-log-20261029-hoverA", start=(18, 59, 9), file="28_hoverA_run_over_time.png", figsize=(11, 8.6), until=60.7, since=0.0, rows_until=60.7,
+                 zero=("pw_err_sum", "mpv_drops"),
+                 title="Run A (viewer with the throttle): the hover (18 to 53 s) has 110 audio dropouts, 21 dropped frames, 140 xruns; the 17 s before and 7 s after have none",
+                 panels=[("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE), ("sys_cpu_pct", "Whole computer CPU\n(% of 8 threads)", "line", BLUE),
+                         ("mpv_drops", "mpv frames dropped\n(since the start)", "step", INK), ("pw_err_sum", "PipeWire xruns\n(since the start)", "step", INK)]))
+
 
 def draw(run):
     rows = list(csv.DictReader(open(os.path.join(D, run["stem"] + "-samples.csv"))))

@@ -154,6 +154,39 @@ Two retests after the `thumbfast.lua` change, both with `--gpu-sudo`, the same 4
 - **Owner's decision (same day):** B and C are not worth running, because he has always used the mouse for seeking and other actions without any stutter before the thumbnails existed. That is real evidence (it points at the thumbnail path, not at uosc or the mouse in general), but it is from memory, not the same session or the same measurement, so the thread table from run A is still wanted, and two switches were added to the viewer (`no_overlay`, `no_convert`) to find the cost inside the script if the table does not settle it.
 - **Next runs (60 s each: 15 s still, 30 s hover, 15 s still, same stream):** (A) as now, with the thread table; (B) `~/.config/mpv/scripts/thumbfast.lua` moved away, hover again (uosc still draws its tooltip, no picture); (C) the mouse moved around over the picture, not over the seek bar. If B stutters as much as A, our script is not the cost. If the busy thread is the video output, the cost is drawing the on-screen controls over a 4K Dolby Vision frame, and the options are uosc's own settings or a lower OSD size, not `thumbfast.lua`.
 
+
+## Resource log, 2026-10-29 18:59 (run A: the viewer with the throttle, thread table)
+
+60 s, started 18:59:09, same stream, `--gpu-sudo`, CamillaDSP carrying audio. The owner kept the mouse still for about 15 s, hovered along the seek bar, then kept it still (the clock times were not written down; the data puts the hover at 18 to 53 s). He declined tests B and C because he has always used the mouse for seeking without stutter. Data in `docs/data/resource-log-20261029-hoverA-*` (the `summary.md` is kept too); [figure](graphs/28_hoverA_run_over_time.png).
+
+**Whether the new viewer was running:** yes, as far as the data can say. `ffmpeg` was alive in 18 of the 34 hover samples and never more than 2 at once, which is the `MAX_CONV = 2` cap. (The per-process CPU column for ffmpeg reads 0.0 because a program that lives under a second has no earlier sample to subtract; that column cannot be used for it.)
+
+**What happened, all inside the hover and none of it in the 17 s before or the 7 s after:**
+
+| | before (1-17 s) | hover (18-53 s) | after (54-60 s) |
+|---|---|---|---|
+| CamillaDSP buffer-empty lines (audio went silent) | 0 | **110** (median gap 0.18 s, longest 2.3 s) | 0 |
+| mpv frames dropped by the display path (cumulative) | 0 | **21** (first at 19.8 s) | 0 more |
+| PipeWire xruns added (best effort) | about 1 | **about 140** | 0 more |
+| mpv CPU, mean | 18 % | 64 % (up to 90 %) | 17 % |
+| Decoder drops, A/V sync offset | 0, under 1 ms | 0, under 1 ms | 0, under 1 ms |
+| Whole computer, cores in use | 0.52 | 2.41 | 1.40 (network is pulling 175 Mbit/s then) |
+| of which the components we list | 0.28 | 0.74 | 0.26 |
+| **not in the table** | 0.23 | **1.67** | 1.14 |
+| GPU render busy, mean | 38 % | 48 % | 43 % |
+
+So the stutter the owner hears and sees is an audio dropout (CamillaDSP is starved of audio and plays silence) plus dropped frames at the display, not a decoding problem: the decoder dropped nothing, and the 4 decode threads together use about 5 % of a core.
+
+**The thread table (mpv, CPU % of one core, mean over the hover):** `worker` 12.6 (max 41), `lua/uosc` 8.8 (max 18), `vo` 10.5 (max 17), `mpv` 4.2, each of the four `av:hevc` decode threads 1.3. Before the hover the busiest were `vo` 5 to 8, `lua/uosc` 3 to 4 and `mpv` 3, and `worker` did not appear. The script's own thread (`lua/thumbfast`) never made the top three, so it stays under about 10 %. In plain words: three things got busier at once (`worker` from nothing, `lua/uosc` about 4 times, `vo` about 2 times), and the biggest change is `worker`.
+
+**What `worker` is** (checked in the mpv source, current master, not necessarily the owner's version): mpv's general thread pool. The `subprocess` command, which `thumbfast.lua` uses to run ffmpeg, is one of the commands that run on it. Each launch from mpv has to create a new process from a 1 GB, many-threaded program. In current mpv that uses `clone(CLONE_VM)` where available; in older releases it is a plain `fork()`, which copies the page tables of the whole process and holds a lock that stops other threads from touching memory while it does. Which of the two the owner's mpv uses is not known yet; `resource-log` now writes `mpv --version` into `environment.txt`.
+
+**What this supports, and how far:** starting programs from inside mpv during the hover is the one thing the hover does that ordinary mouse seeking does not, `worker` is the thread that does it, ffmpeg was alive for about half the hover, and about 1.7 cores were being used by things outside the table (short-lived ffmpeg processes are the likeliest, but the desktop and the Decypharr container are also outside the table, and the data cannot tell them apart). That is a strong lead, not a proof. It does not explain `lua/uosc` and `vo` getting busier, which may be a consequence (more redraws) or a separate cost. The owner's history of stutter-free mouse use fits it: stock thumbfast starts its helper once per film, not once per picture; I have not checked what he used before.
+
+**What changed in response:** the viewer now turns the whole pack into one raw file with a single ffmpeg run when the film loads (`bulk=yes`, the default, up to `bulk_max_mb=256`), and a hover only points `overlay-add` at the right offset in that file, so a hover starts no program at all. Tests: the run is started once, hovering over every picture starts nothing, the picture shown from the shared file is byte-identical to a single-picture conversion, a missing picture earlier in the pack does not shift the others, and a failed or oversized bulk run falls back to the old one-per-picture path. `resource-log` now also records the CPU of mpv's finished child programs (`mpv_children_cpu_pct`, which sees short-lived ffmpeg runs exactly) and the whole-computer CPU not accounted for by the component table (`unlisted_cores`).
+
+**Prediction, so the next run can prove it wrong:** with `bulk` on, `worker` should stay near zero during the hover, `mpv_children_cpu_pct` should be zero during the hover (one short burst when the film loads), and the buffer-empty lines, dropped frames and xruns should not rise. If the stutter remains with no program being started, the cause is in the overlay or uosc redraw path, and `no_overlay=yes` is the next run.
+
 ## Sub arrival (measured 2026-10-24 from sweep1/sweep2)
 
 The sub (LFE) arrives about 6 to 7 ms after the front left at the seat, with a group delay near 15 ms at 50 to 100 Hz. The LFE delay is still 0.20 ms (kept in step with FL), so this has not been compensated.
