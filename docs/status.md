@@ -167,7 +167,7 @@ Two retests after the `thumbfast.lua` change, both with `--gpu-sudo`, the same 4
 |---|---|---|---|
 | CamillaDSP buffer-empty lines (audio went silent) | 0 | **110** (median gap 0.18 s, longest 2.3 s) | 0 |
 | mpv frames dropped by the display path (cumulative) | 0 | **21** (first at 19.8 s) | 0 more |
-| PipeWire xruns added (best effort) | about 1 | **about 140** | 0 more |
+| PipeWire xruns added (best effort; this counter updates in lumps and lags: the last +17 shows at 55.5 s, 2 s after the last audio dropout) | about 1 | **about 123, 140 with the last lump** | 17 (the lump), then 0 |
 | mpv CPU, mean | 18 % | 64 % (up to 90 %) | 17 % |
 | Decoder drops, A/V sync offset | 0, under 1 ms | 0, under 1 ms | 0, under 1 ms |
 | Whole computer, cores in use | 0.52 | 2.41 | 1.40 (network is pulling 175 Mbit/s then) |
