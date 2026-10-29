@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Figures 24 to 26: three runs of 2026-10-29 over time, drawn from the slimmed run data in docs/data (samples and the CamillaDSP buffer-empty times).
-Run start is taken from environment.txt (09:58:41, 10:44:33 and 12:38:33), so event times are good to about 1 s.
+"""Figures 24 to 27: four runs of 2026-10-29 over time, drawn from the slimmed run data in docs/data (samples and the CamillaDSP buffer-empty times).
+Run start is taken from environment.txt (09:58:41, 10:44:33, 12:38:33 and 12:46:12), so event times are good to about 1 s.
 Usage: python3 tools/make-resource-timeseries.py [output-directory]"""
 import csv, os, sys
 import matplotlib
@@ -16,19 +16,26 @@ plt.rcParams.update({"figure.facecolor": SURF, "axes.facecolor": SURF, "savefig.
                      "axes.spines.right": False, "axes.grid": True, "grid.color": GRID, "grid.linewidth": 0.8, "axes.axisbelow": True})
 
 RUNS = [
-    dict(stem="resource-log-20261029-4k", start=(9, 58, 41), file="24_4k_run_over_time.png", figsize=(11, 8.6), until=None, since=0.0, rows_until=None,
+    dict(stem="resource-log-20261029-4k", start=(9, 58, 41), file="24_4k_run_over_time.png", figsize=(11, 8.6), until=None, since=0.0, rows_until=None, zero=(),
          title="4K remux streamed from the mount, 600 s: 116 buffer-empty lines (green) against load",
          panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
                  ("psi_io_pct", "I/O pressure\n(PSI %)", "line", GREY), ("pw_err_sum", "PipeWire xruns\n(cumulative)", "step", INK)]),
-    dict(stem="resource-log-20261029-hover", start=(10, 44, 33), file="25_hover_run_over_time.png", figsize=(11, 8.6), until=121.0, since=0.0, rows_until=None,
+    dict(stem="resource-log-20261029-hover", start=(10, 44, 33), file="25_hover_run_over_time.png", figsize=(11, 8.6), until=121.0, since=0.0, rows_until=None, zero=(),
          title="Same stream, 2 minutes: quiet for 110 s, then mpv at up to 100 % CPU, dropped frames and xruns (seek-bar hovering, per the owner)",
          panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
                  ("mpv_drops", "mpv frames dropped\n(cumulative)", "step", INK), ("pw_err_sum", "PipeWire xruns\n(cumulative)", "step", INK)]),
-    dict(stem="resource-log-20261029-hover2", start=(12, 38, 33), file="26_hover2_run_over_time.png", figsize=(11, 8.6), until=65.0, since=2.0, rows_until=64.0,
+    dict(stem="resource-log-20261029-hover2", start=(12, 38, 33), file="26_hover2_run_over_time.png", figsize=(11, 8.6), until=65.0, since=2.0, rows_until=64.0, zero=(),
          title="Second hover test (viewer change possibly not installed): clean 35 s, then mpv at 100 to 140 % CPU, 80 drops, 241 xruns",
          panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
                  ("mpv_drops", "mpv frames dropped\n(cumulative)", "step", INK), ("pw_err_sum", "PipeWire xruns\n(cumulative)", "step", INK)]),
 ]
+
+
+RUNS.append(dict(stem="resource-log-20261029-hover3", start=(12, 46, 12), file="27_hover3_run_over_time.png", figsize=(11, 8.6), until=50.2, since=0.0, rows_until=50.1,
+                 zero=("pw_err_sum", "mpv_drops"),
+                 title="Third hover test (viewer installed): clean for 33 s, then mpv at 65 to 102 % CPU, 14 drops, 58 xruns",
+                 panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
+                         ("mpv_drops", "mpv frames dropped\n(since the start)", "step", INK), ("pw_err_sum", "PipeWire xruns\n(since the start)", "step", INK)]))
 
 
 def draw(run):
@@ -45,6 +52,8 @@ def draw(run):
     fig, axs = plt.subplots(len(run["panels"]), 1, figsize=run["figsize"], sharex=True, gridspec_kw={"height_ratios": [2, 1.4, 1.4, 1.4]})
     for ax, (col, label, kind, colour) in zip(axs, run["panels"]):
         pts = [(float(r["t_s"]), float(r[col])) for r in rows if r[col] != ""]
+        if col in run["zero"] and pts:                        # counters that were already running when the log started
+            pts = [(a, b - pts[0][1]) for a, b in pts]
         t, v = [p[0] for p in pts], [p[1] for p in pts]
         if kind == "area":
             ax.fill_between(t, v, color=colour, alpha=0.85, lw=0, zorder=3)
