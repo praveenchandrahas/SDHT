@@ -187,6 +187,31 @@ So the stutter the owner hears and sees is an audio dropout (CamillaDSP is starv
 
 **Prediction, so the next run can prove it wrong:** with `bulk` on, `worker` should stay near zero during the hover, `mpv_children_cpu_pct` should be zero during the hover (one short burst when the film loads), and the buffer-empty lines, dropped frames and xruns should not rise. If the stutter remains with no program being started, the cause is in the overlay or uosc redraw path, and `no_overlay=yes` is the next run.
 
+
+## Resource log, 2026-10-29 20:09 (run B1: one-ffmpeg viewer, audio NOT through CamillaDSP)
+
+60 s, started 20:09:45, same stream, `--gpu-sudo`. The owner reports **no visual stutter**. Two things differ from run A, so this is not a clean test of the viewer change: (1) the new viewer (`bulk`), installed into `~/.config/mpv-object-audio/scripts/`; (2) the laptop was not connected to the Vantec, so audio went from mpv straight to the onboard sink and CamillaDSP carried nothing (its journal is only "waited 1s but only got 0 bytes", 61 times, which is idle, not a fault). `resource-log` was the old copy (no version or children columns), so the roomtone `git pull` was not done before this run. Data in `docs/data/resource-log-20261029-hoverB1-*`.
+
+The hover shows in the data as mpv CPU and the `lua/uosc` thread rising at 17 s and falling at 51 s.
+
+| | run A (via CamillaDSP, per-picture ffmpeg) hover | run B1 (direct to sink, one-run viewer) hover |
+|---|---|---|
+| mpv CPU, mean (max) | 64 % (90) | 30 % (37); never above 40 % |
+| samples with ffmpeg alive | 18 of 34 | **0 of 58** |
+| `worker` thread in the top three | yes, 13-41 % | **never** |
+| `lua/uosc` thread (before hover about 3.5 %) | 12-18 % | about 10 % |
+| `vo` thread (before hover about 7 %) | 11-16 % | about 10.5 % |
+| mpv frames dropped (display / decoder) | 21 / 0 | **0 / 0** |
+| whole computer not in the component table, cores (network-quiet seconds only) | 1.67 (before: 0.23) | **0.32** (before the hover, with network traffic: 1.1; after: 0.27) |
+| PipeWire xruns | about 140 | 0 (the counter stayed at 41) |
+| audio dropouts | 110 (CamillaDSP) | cannot be measured: CamillaDSP not in the path |
+
+**What this supports:** the per-hover ffmpeg launches and the `worker` load are gone, and the CPU the hover used outside the table fell by about five times. Those do not depend on the audio route, so they are attributable to the viewer change. That is consistent with the run A reading (starting programs from inside mpv was the cost), and a plain mouse hover on this machine no longer drives mpv anywhere near a core.
+
+**What it does not show:** that the stutter is gone *with the Vantec and CamillaDSP in the path*, which is the setup that stuttered. mpv's default is to sync video to the audio clock, so an audio underrun can itself cause dropped frames; the missing drops here could therefore partly come from the different audio path. The 110 CamillaDSP dropouts cannot be checked in this run at all. `lua/uosc` is still about 2.8 times busier than at rest and `vo` about 1.4 times; that residual cost did not cause drops here and is not ours (uosc's own redraws).
+
+**Next run, the decisive one:** the same 60 s with the Vantec connected, CamillaDSP carrying audio, after `git pull` in roomtone and seekthumbs (the `install-viewer` already done is current). Pass: no buffer-empty lines inside the hover, no dropped frames, `worker` absent. If it still stutters there with no ffmpeg alive, the cause is in the CamillaDSP/Vantec path under mpv CPU load, not in the viewer, and the thread table will say which thread is late. Optional cheap cross-check without the Vantec: `bulk=no` in `seekthumbs.conf` (next to the installed `scripts` folder), the same run; if it then drops frames and `worker` returns, the fix is confirmed independently of the audio route.
+
 ## Sub arrival (measured 2026-10-24 from sweep1/sweep2)
 
 The sub (LFE) arrives about 6 to 7 ms after the front left at the seat, with a group delay near 15 ms at 50 to 100 Hz. The LFE delay is still 0.20 ms (kept in step with FL), so this has not been compensated.
