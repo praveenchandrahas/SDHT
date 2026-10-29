@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Figure 24: the 4K run of 2026-10-29 over time (data in docs/data). Run start taken as 09:58:41 (environment.txt), so event times are good to about 1 s.
+"""Figures 24 and 25: two runs of 2026-10-29 over time, drawn from the slimmed run data in docs/data (samples and the CamillaDSP buffer-empty times).
+Run start is taken from environment.txt (09:58:41 and 10:44:33), so event times are good to about 1 s.
 Usage: python3 tools/make-resource-timeseries.py [output-directory]"""
 import csv, os, sys
 import matplotlib
@@ -13,22 +14,46 @@ BLUE, ORANGE, AQUA, GREY = "#2a78d6", "#eb6834", "#1baf7a", "#8a8984"
 plt.rcParams.update({"figure.facecolor": SURF, "axes.facecolor": SURF, "savefig.facecolor": SURF, "text.color": INK, "axes.labelcolor": INK2,
                      "xtick.color": INK2, "ytick.color": INK2, "axes.edgecolor": GRID, "font.size": 10, "axes.spines.top": False,
                      "axes.spines.right": False, "axes.grid": True, "grid.color": GRID, "grid.linewidth": 0.8, "axes.axisbelow": True})
-rows = list(csv.DictReader(open(os.path.join(D, "resource-log-20261029-4k-samples.csv"))))
-col = lambda k: [float(r[k]) for r in rows]
-t, net, io, mcpu, err = col("t_s"), col("net_rx_mbps"), col("psi_io_pct"), col("mpv_cpu_pct"), col("pw_err_sum")
-ev = []
-for s in open(os.path.join(D, "resource-log-20261029-4k-buffer-empty-times.txt")).read().split():
-    h, m, sec = map(int, s.split(":"))
-    ev.append(h * 3600 + m * 60 + sec - (9 * 3600 + 58 * 60 + 41))
-fig, axs = plt.subplots(4, 1, figsize=(11, 8.6), sharex=True, gridspec_kw={"height_ratios": [2, 1.4, 1.4, 1.4]})
-axs[0].fill_between(t, net, color=BLUE, alpha=0.85, lw=0, zorder=3); axs[0].set_ylabel("Network in\n(Mbit/s)")
-axs[0].text(2, max(net) * 0.9, "Network in: bursts of ~450 Mbit/s, then silence", color=INK, fontsize=9)
-axs[1].plot(t, mcpu, color=ORANGE, lw=1.4, zorder=3); axs[1].set_ylabel("mpv CPU\n(% of one core)")
-axs[2].plot(t, io, color=GREY, lw=1.6, zorder=3); axs[2].set_ylabel("I/O pressure\n(PSI %)")
-axs[3].step(t, err, color=INK, lw=1.6, where="post", zorder=3); axs[3].set_ylabel("PipeWire xruns\n(cumulative)")
-for a in axs:
-    for e in ev: a.axvline(e, color=AQUA, lw=0.7, alpha=0.5, zorder=1)
-axs[3].set_xlabel("Seconds into the run (green lines: each CamillaDSP \"buffer empty\" line)")
-fig.suptitle("4K remux streamed from the mount, 600 s: 116 buffer-empty lines (green) against load", x=0.01, ha="left", fontsize=12)
-fig.tight_layout(rect=(0, 0, 1, 0.97))
-fig.savefig(os.path.join(OUT, "24_4k_run_over_time.png"), dpi=140)
+
+RUNS = [
+    dict(stem="resource-log-20261029-4k", start=(9, 58, 41), file="24_4k_run_over_time.png", figsize=(11, 8.6), until=None,
+         title="4K remux streamed from the mount, 600 s: 116 buffer-empty lines (green) against load",
+         panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
+                 ("psi_io_pct", "I/O pressure\n(PSI %)", "line", GREY), ("pw_err_sum", "PipeWire xruns\n(cumulative)", "step", INK)]),
+    dict(stem="resource-log-20261029-hover", start=(10, 44, 33), file="25_hover_run_over_time.png", figsize=(11, 8.6), until=121.0,
+         title="Same stream, 2 minutes: quiet for 110 s, then mpv at up to 100 % CPU, dropped frames and xruns (seek-bar hovering, per the owner)",
+         panels=[("net_rx_mbps", "Network in\n(Mbit/s)", "area", BLUE), ("mpv_cpu_pct", "mpv CPU\n(% of one core)", "line", ORANGE),
+                 ("mpv_drops", "mpv frames dropped\n(cumulative)", "step", INK), ("pw_err_sum", "PipeWire xruns\n(cumulative)", "step", INK)]),
+]
+
+
+def draw(run):
+    rows = list(csv.DictReader(open(os.path.join(D, run["stem"] + "-samples.csv"))))
+    h0, m0, s0 = run["start"]
+    ev = []
+    for s in open(os.path.join(D, run["stem"] + "-buffer-empty-times.txt")).read().split():
+        h, m, sec = s.split(":")
+        t = int(h) * 3600 + int(m) * 60 + float(sec) - (h0 * 3600 + m0 * 60 + s0)
+        if run["until"] is None or t <= run["until"]:           # lines after mpv stopped are the idle ones
+            ev.append(t)
+    fig, axs = plt.subplots(len(run["panels"]), 1, figsize=run["figsize"], sharex=True, gridspec_kw={"height_ratios": [2, 1.4, 1.4, 1.4]})
+    for ax, (col, label, kind, colour) in zip(axs, run["panels"]):
+        pts = [(float(r["t_s"]), float(r[col])) for r in rows if r[col] != ""]
+        t, v = [p[0] for p in pts], [p[1] for p in pts]
+        if kind == "area":
+            ax.fill_between(t, v, color=colour, alpha=0.85, lw=0, zorder=3)
+        elif kind == "step":
+            ax.step(t, v, color=colour, lw=1.6, where="post", zorder=3)
+        else:
+            ax.plot(t, v, color=colour, lw=1.5, zorder=3)
+        ax.set_ylabel(label)
+        for e in ev:
+            ax.axvline(e, color=AQUA, lw=0.7, alpha=0.5, zorder=1)
+    axs[-1].set_xlabel("Seconds into the run (green lines: each CamillaDSP \"buffer empty\" line while mpv ran)")
+    fig.suptitle(run["title"], x=0.01, ha="left", fontsize=12)
+    fig.tight_layout(rect=(0, 0, 1, 0.97))
+    fig.savefig(os.path.join(OUT, run["file"]), dpi=140)
+
+
+for r in RUNS:
+    draw(r)
