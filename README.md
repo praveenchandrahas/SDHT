@@ -9,7 +9,7 @@ EQ, delays and trims, and the amplifiers only amplify.
 **Needs:** Kubuntu 24.04, PipeWire, Omniphony, harletty-bridge, a patched mpv, CamillaDSP and a 7.1 USB interface (details under [Quick start](#quick-start-on-a-new-machine);
 exact versions are still to be filled in, see [Still to fill in](#still-to-fill-in)).
 **Status:** everything below was measured at one seat, in one room, with one microphone. "Measured" here means that; see [How much is measured?](#how-much-is-measured) and
-[Uncertainty](#uncertainty) before relying on any number. The analysis code that produced the numbers was written with an AI assistant and has not been independently validated ([Authorship](#authorship-and-licence)).
+[Uncertainty](#uncertainty) before relying on any number. The analysis code that produced the numbers was written with an AI assistant. It was checked against simulated rooms and REW exports and used on real recordings in the author's room, but it has not been repeated by another person or a second tool ([Authorship](#authorship-and-licence)).
 
 Room: about 10 x 10 ft, light-controlled and acoustically treated, with no space behind the seat for rear speakers, so **5.1.2 is the
 largest layout used here** (7.1.4 and 5.1.4 are deliberately not used).
@@ -196,7 +196,7 @@ chain that has not been located. Next step is the same kit at a lower level and 
 One room, one seat, one microphone (a Dayton iMM-6S on its own USB clock), no absolute level calibration. The microphone was not in exactly the same spot between the two sweep runs, so
 single frequency bins moved by 3 to 7 dB and one speaker's level by about 2.5 dB; read band averages, not single points. Differences under about 2 dB per band or 0.03 STI are within
 repeatability. The capture chain caps at about -6 dBFS in the hot sub run, and its floor above 4 kHz may set the noise values. STI is a STIPA-style estimate without auditory masking, not a certified measurement. The
-"after" bass curve in A1 is computed, not recorded. The analysis code (sweep, sub, dialogue, reflection and rattle analysers) was written with an AI assistant and has not been independently validated; where a number matters, check it against
+"after" bass curve in A1 is computed, not recorded. The analysis code (sweep, sub, dialogue, reflection and rattle analysers) was written with an AI assistant, checked against simulated rooms and REW exports, and used on real recordings in the author's room (a predicted against recorded bass change agreed within about 1 to 2 dB); it has not been repeated by another person or a second tool. Where a number matters, check it against
 the raw REW exports in `data/rew/`.
 
 ## Repository layout
@@ -259,8 +259,8 @@ should only be rebuilt by someone who knows what they are doing.
 ## Authorship and licence
 
 The tuning decisions, measurements, listening tests and the build itself are the author's. The scripts, the analysis code and first drafts of these documents were written with Claude (Anthropic) in working sessions from 2026-10-20 (most of the code in the first five days, the status page, autocal, seekthumbs and mpv-shelf in the days after).
-No script can be shown to be older than 2026-10-20; three early scripts and the `mpv-atmos` option block (dated Sep 2026 by its own header) were in hand before the code was written up here, and who wrote the option block is not settled by the repositories. The evidence and its limits are in [docs/script-ages.md](docs/script-ages.md). This includes the code that produces the numbers: the sweep, sub, dialogue (STI) and reflection analysers and the rattle detector. It has been checked against simulated rooms and against the REW exports,
-not independently validated.
+No script can be shown to be older than 2026-10-20; three early scripts and the `mpv-atmos` option block (dated Sep 2026 by its own header) were in hand before the code was written up here, and who wrote the option block is not settled by the repositories. The evidence and its limits are in [docs/script-ages.md](docs/script-ages.md). This includes the code that produces the numbers: the sweep, sub, dialogue (STI) and reflection analysers and the rattle detector. It has been checked against simulated rooms and against the REW exports, and it has been used on real recordings in the author's room (a predicted against recorded bass change agreed within about 1 to 2 dB).
+It has not been repeated by another person or a second analysis tool.
 
 **Licence: [Apache License 2.0](LICENSE)**, for all six repositories. It lets anyone use, change and redistribute the work, including commercially, and it carries an explicit patent grant and a "no warranty" clause. Most of the project is integration of other people's software
 (Omniphony, truehdd, CamillaDSP, PipeWire, mpv, ffmpeg and others); those keep their own licences and are not relicensed by this one. Where this project's code is combined with GPL software (Omniphony, CamillaDSP, mpv are GPL), the combined program you run is GPL-covered,
