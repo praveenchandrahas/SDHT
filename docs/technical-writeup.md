@@ -89,6 +89,8 @@ Chirp trains were recorded at the seat on a second clock, and delays were solved
 | FC | 0.97 | -0.8 | RL | 4.60 | -0.6 |
 | RR | 4.70 | -0.3 | LFE | 0.20 | 0 |
 
+*The table is the 2026-10-21 measurement. Since 2026-10-28 the applied delays are FL 0.00, FC 0.80, LFE 0.00, SL 3.66, SR 3.61, RL 4.91 and RR 5.12 ms (autocal, applied past a FAIL verdict, not yet verified: see [alignment.md](alignment.md)).*
+
 The surrounds are about 1 m closer to the seat than FR, the farthest speaker (SL 1.03 m, SR 0.93 m closer), so they take the largest bed delays. The heights are left out of the applied alignment (`--align=bed`).
 
 ## 8. Automation

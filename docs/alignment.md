@@ -51,6 +51,25 @@ FC -0.08, SL +0.08, SR -0.12 ms. All within 0.2 ms, inside the measurement scatt
 The heights need 4.6 ms although the tape measure puts them about as far as FR. Untested explanation: the Z906 digital path
 adds about 4.5-5 ms that the analog Salcon path to the heights lacks.
 
+## Applied by autocal on 2026-10-28 (forced past a FAIL verdict; not verified)
+
+A five-position autocal run (Roomtone, `data/autocal/20261028-151158/` there) proposed new delays, and the author applied them with `--force` because the run's verdict was FAIL (the bass fit and the 40 Hz signal-to-noise gates failed; the delays do not depend on those). Values from the run's `room.proposed.json`, which `autocal apply` installs as the live `~/.config/camilladsp/room.json`; they now override the `ALIGN` table in `scripts/set-eq.py`:
+
+| Speaker | Delay before (above) | Delay now | Change | Trim (unchanged) |
+|---------|-----:|-----:|-----:|-----:|
+| FL | 0.20 ms | 0.00 ms | -0.20 | 0 |
+| FR | 0 (reference) | 0 | 0 | -1.9 dB |
+| FC | 0.97 ms | 0.80 ms | -0.17 | -0.8 dB |
+| LFE | 0.20 ms | 0.00 ms | -0.20 (kept in step with FL) | 0 |
+| SL | 3.00 ms | 3.66 ms | +0.66 | -4.4 dB |
+| SR | 2.72 ms | 3.61 ms | +0.89 | -0.7 dB |
+| RL (height) | 4.60 ms | 4.91 ms | +0.31 | -0.6 dB |
+| RR (height) | 4.70 ms | 5.12 ms | +0.42 | -0.3 dB |
+
+The bass EQ (`drone2`) and the heights' tone filters were not changed.
+
+**Open conflict.** In this run the surrounds arrived 0.86 ms (SL) and 1.08 ms (SR) *before* the front left at the seat, with the old delays in place, which is why autocal added delay. The 2026-10-23 verification above found SL +0.08 and SR -0.12 ms with the same delays. The two disagree by about 0.9 ms. Possible reasons (none checked): a different microphone position, a different timing method (autocal averages five positions and uses its own pilot chirps), or something moved in between. One pilot chirp in the autocal run (position 1, RL) was also off by about 3 ms. Until a verification run (`autocal verify`, or the 2026-10-23 sweep test repeated) decides which is right, treat the applied surround delays as **unverified**; 1 ft is about 0.9 ms, so the risk is small but real.
+
 ## Heights (2026-10-23): bass management and tone
 
 The heights (Samsung SWA-8500S on the Salcon amplifier) do not reproduce bass: 11 dB down at 125 Hz, 27 dB down at 100 Hz,

@@ -49,16 +49,16 @@ port number is index + 1):
 
 | Index | Port | Speaker | Goes to | Bass EQ applied | Delay (bed alignment) | Trim |
 |------:|------|---------|---------|:---:|--:|--:|
-| 0 | FL | front left | Z906 | yes | 0.20 ms | 0 dB |
+| 0 | FL | front left | Z906 | yes | 0.00 ms | 0 dB |
 | 1 | FR | front right | Z906 | yes | 0 (reference) | -1.9 dB |
 | 2 | RL | left height | height amp | no | none in `--align=bed` | none |
 | 3 | RR | right height | height amp | no | none in `--align=bed` | none |
-| 4 | FC | centre | Z906 | yes | 0.97 ms | -0.8 dB |
-| 5 | LFE | subwoofer feed | Z906 sub | yes | 0.20 ms | 0 dB |
-| 6 | SL | left surround (side) | Z906 | yes | 3.00 ms | -4.4 dB |
-| 7 | SR | right surround (side) | Z906 | yes | 2.72 ms | -0.7 dB |
+| 4 | FC | centre | Z906 | yes | 0.80 ms | -0.8 dB |
+| 5 | LFE | subwoofer feed | Z906 sub | yes | 0.00 ms | 0 dB |
+| 6 | SL | left surround (side) | Z906 | yes | 3.66 ms | -4.4 dB |
+| 7 | SR | right surround (side) | Z906 | yes | 3.61 ms | -0.7 dB |
 
-Where the numbers come from: [alignment.md](alignment.md). The Z906 does its own bass management; its sub gets the
+Delays are the values applied by autocal on 2026-10-28 (the 2026-10-21 measurement had FL 0.20, FC 0.97, LFE 0.20, SL 3.00, SR 2.72 ms; heights, when applied, are now RL 4.91 and RR 5.12 ms instead of 4.60 and 4.70). They are not yet verified: see [alignment.md](alignment.md#applied-by-autocal-on-2026-10-28-forced-past-a-fail-verdict-not-verified). Where the numbers come from: [alignment.md](alignment.md). The Z906 does its own bass management; its sub gets the
 low end of all five satellite channels as well as the LFE feed, which is why every Z906-fed channel shows the same
 bass in measurements.
 
