@@ -1,4 +1,4 @@
-![Software-Defined Home Theatre: mpv with object audio, Omniphony, PipeWire, CamillaDSP and a 7.1 USB DAC driving a 5.1.2 room](docs/img/cover.png)
+![Software-Defined Home Theatre: the four parts of the project (mpv-object-audio, linux-theater-dsp, Roomtone, and the supporting utilities mpv-shelf and seekthumbs) around a 5.1.2 room. Illustrative artwork, not a photograph or a measurement.](docs/img/cover.png)
 
 # Software-defined home theatre (Linux, Atmos 5.1.2)
 
