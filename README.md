@@ -16,7 +16,7 @@ largest layout used here** (7.1.4 and 5.1.4 are deliberately not used).
 
 ## The repositories
 
-The project started as one repository and was split into five repositories on 2026-10-25 (history preserved in each); a sixth, **mpv-shelf**, was added on 2026-10-26. This one, **sdht**, is the front door: the build log, documentation, results and graphs.
+It is one project in six repositories (split from a single repository on 2026-10-25, history preserved in each; mpv-shelf was added on 2026-10-26). The map below shows how they fit. This one, **sdht**, is the front door: the build log, documentation, results and graphs.
 
 | Repository | What it is |
 |---|---|
@@ -26,6 +26,10 @@ The project started as one repository and was split into five repositories on 20
 | **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | seek-bar thumbnails for a read-only film library (an rclone or debrid mount): built when you play a film, as a batch, or from a local web page where you tick the films and start, pause and stop; one set shared by the releases of a film; and the mpv viewer script |
 | **[mpv-shelf](https://github.com/praveenchandrahas/mpv-shelf)** | a Netflix-style film browser inside mpv (poster grid, Continue Watching, search, title pages) over the same library folder; plays by file path |
 | **[Roomtone](https://github.com/praveenchandrahas/Roomtone)** | `autocal` (measure the room through CamillaDSP and propose a correction), test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison, second-sub drift), microphone calibration (`miccal.py`), REW data, the local control page (live per-speaker levels on a 5.1.2 plan, EQ and profile controls, an autocal page) and the mpv status overlay (key **C**) |
+
+![One project, six repositories: every component placed in the repository that holds it](docs/img/ecosystem-map.png)
+
+*Every component in the repository that holds it. Grey boxes are other people's software or hardware. Redraw with `tools/make-ecosystem-map.py`.*
 
 **Why not just EasyEffects or PipeWire's upmix?** They target standard layouts and sit outside the room correction; this rig is 5.1.2 with measured per-speaker delays, trims and EQ, so the upmixer is written as CamillaDSP blocks in front of that chain. The comparison, and what the upmixers do not do, is in the [linux-theater-dsp README](https://github.com/praveenchandrahas/linux-theater-dsp#how-this-differs-from-easyeffects-and-other-generic-upmixers-and-why-this-route).
 
@@ -48,10 +52,6 @@ work of others, and everything here stands on it:
   [Cavern](https://github.com/VoidXH/Cavern) (used for offline rendering before the live path existed).
 
 How the Omniphony stack was built and debugged on this machine is in [docs/omniphony-debugging.md](https://github.com/praveenchandrahas/mpv-object-audio/blob/main/docs/omniphony-debugging.md).
-
-![Block-level overview: audio data plane, control plane, measurement and tuning loop](docs/img/block-overview.png)
-
-*The short version: what the audio passes through, what controls it, and how it is tuned. The next diagram has every component.*
 
 ![System overview, every component](docs/img/system-overview.png)
 
