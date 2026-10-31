@@ -213,7 +213,7 @@ Everything else (router, upmix engine, player installer, thumbnails, measurement
 
 ## Quick start on a new machine
 
-Two steps cover the software. Start from Kubuntu 24.04 (or another Ubuntu 24.04 derivative) with PipeWire running, the 7.1 USB interface plugged in, and [CamillaDSP](https://github.com/HEnquist/camilladsp/releases) installed as `/usr/local/bin/camilladsp` (not scripted yet; see [docs/installation.md](docs/installation.md)).
+An ordered list for rebuilding the whole rig on a new laptop or the planned desktop is in [docs/rebuild-checklist.md](docs/rebuild-checklist.md) (it also records which upstream release tags match the installed Omniphony and harletty-bridge, and how sure each match is). Two steps cover the software. Start from Kubuntu 24.04 (or another Ubuntu 24.04 derivative) with PipeWire running, the 7.1 USB interface plugged in, and [CamillaDSP](https://github.com/HEnquist/camilladsp/releases) installed as `/usr/local/bin/camilladsp` (not scripted yet; see [docs/installation.md](docs/installation.md)).
 
 **1. The player: Omniphony, harletty-bridge and mpv-omniphony, as the `mpv-object-audio` command.**
 
